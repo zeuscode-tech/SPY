@@ -1,5 +1,36 @@
+const isCapBuild = process.env.CAPACITOR_BUILD === 'true';
+
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development' || isCapBuild,
+  runtimeCaching: [
+    {
+      urlPattern: /^https?.*/i,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'http-cache',
+        expiration: {
+          maxEntries: 200,
+          maxAgeSeconds: 60 * 60 * 24 * 7,
+        },
+      },
+    },
+  ],
+  fallbacks: {
+    document: '/offline.html',
+  },
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: isCapBuild ? 'export' : undefined,
+  trailingSlash: isCapBuild,
+  images: {
+    unoptimized: true,
+  },
+
   // ── PWA & Performance ──────────────────────────────────────────────────────
   reactStrictMode: true,
   swcMinify: true,
@@ -11,6 +42,8 @@ const nextConfig = {
 
   // ── Headers for PWA / mobile ───────────────────────────────────────────────
   async headers() {
+    if (isCapBuild) return [];
+
     return [
       {
         source: '/(.*)',
@@ -27,8 +60,14 @@ const nextConfig = {
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
+      {
+        source: '/sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
+        ],
+      },
     ];
   },
 };
 
-module.exports = nextConfig;
+module.exports = withPWA(nextConfig);

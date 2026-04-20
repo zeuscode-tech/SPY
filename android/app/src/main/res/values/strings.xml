@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Spy Ultimate</string>
+    <string name="title_activity_main">Spy Ultimate</string>
+    <string name="package_name">com.spy.ultimate</string>
+    <string name="custom_url_scheme">com.spy.ultimate</string>
+</resources>

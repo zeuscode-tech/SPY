@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Spy - Offline</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: radial-gradient(circle at 20% 20%, #00131f 0%, #000000 45%),
+          linear-gradient(140deg, #000000, #07111f 55%, #02181b);
+        color: #f8fdff;
+        font-family: "JetBrains Mono", "Segoe UI", sans-serif;
+        padding: 24px;
+      }
+
+      .card {
+        max-width: 520px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 16px;
+        background: rgba(9, 15, 28, 0.6);
+        backdrop-filter: blur(10px);
+        padding: 24px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: 1.4rem;
+      }
+
+      p {
+        margin: 0;
+        line-height: 1.6;
+        color: #d6eef7;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1>Нет сети</h1>
+      <p>
+        Приложение сохранено на устройстве. Как только интернет появится,
+        обновите страницу, и игра продолжится.
+      </p>
+    </main>
+  </body>
+</html>
