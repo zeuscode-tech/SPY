@@ -1,4 +1,4 @@
-package com.spy.ultimate;
+package com.quantumLimited.SPY;
 
 import com.getcapacitor.BridgeActivity;
 

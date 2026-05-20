@@ -1,12 +1,12 @@
 {
-  "name": "Spy – Ultimate Edition",
+  "name": "Spy Ultimate",
   "short_name": "Spy",
-  "description": "The ultimate party spy game with OLED design",
+  "description": "Offline party game for finding the spy",
   "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "browser"],
+  "display_override": ["standalone", "browser"],
   "background_color": "#000000",
   "theme_color": "#000000",
   "orientation": "portrait-primary",
@@ -27,7 +27,7 @@
   "categories": ["games", "entertainment"],
   "shortcuts": [
     {
-      "name": "Quick Start",
+      "name": "Start game",
       "url": "/",
       "description": "Start a new spy game"
     }

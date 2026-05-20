@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spy Ultimate - Ультимативная игра для компании</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8B5CF6;
+            --secondary: #EC4899;
+            --accent: #D946EF;
+            --bg: #0f172a;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: #fff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .gradient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 30%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.15) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        header {
+            padding: 4rem 1rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            letter-spacing: 0.2em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.3));
+        }
+
+        .subtitle {
+            font-size: 0.8rem;
+            letter-spacing: 0.5em;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        section {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        ul {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.8rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        li::before {
+            content: "•";
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .feature-card h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .privacy-content {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 2.5rem; }
+            section { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="gradient-bg"></div>
+
+    <header>
+        <h1>SPY</h1>
+        <div class="subtitle">Ультимативное издание</div>
+    </header>
+
+    <main>
+        <section id="about">
+            <h2>О приложении</h2>
+            <p><strong>Spy Ultimate</strong> — это современная интерпретация классической игры «Шпион», созданная для того, чтобы сделать ваши встречи с друзьями незабываемыми. Мы перенесли любимую механику в футуристичный интерфейс с плавными анимациями и умными алгоритмами.</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Огромная база слов</h3>
+                    <p>Сотни локаций, включая спецпакеты по Аниме, Кино и современным темам.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Умный баланс</h3>
+                    <p>Алгоритм следит, чтобы роли и слова не повторялись слишком часто у одних и тех же игроков.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Разные режимы</h3>
+                    <p>Классический режим или режим «Другое слово» для еще более напряженных расследований.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Полная кастомизация</h3>
+                    <p>Добавляйте свои слова и настраивайте таймеры под темп вашей компании.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="privacy">
+            <h2>Политика конфиденциальности</h2>
+            <div class="privacy-content">
+                <p>Ваша конфиденциальность — наш приоритет. Spy Ultimate разработан как полностью локальное приложение.</p>
+                <ul>
+                    <li><strong>Сбор данных:</strong> Мы не собираем, не храним и не передаем ваши персональные данные.</li>
+                    <li><strong>Имена игроков:</strong> Введенные вами имена хранятся исключительно локально в памяти вашего устройства и используются только в рамках текущей игровой сессии.</li>
+                    <li><strong>Локальное хранилище:</strong> Настройки игры и история слов сохраняются только на вашем телефоне для улучшения игрового опыта.</li>
+                    <li><strong>Интернет:</strong> Приложению не требуется постоянное подключение к интернету для работы игровых функций.</li>
+                    <li><strong>Реклама и аналитика:</strong> В приложении отсутствуют сторонние трекеры и скрытые системы сбора данных.</li>
+                </ul>
+                <p>По всем вопросам вы можете связаться с нами через страницу приложения в Google Play.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        &copy; 2026 Quantum Limited. Все права защищены.
+    </footer>
+</body>
+</html>

@@ -62,12 +62,33 @@ export const getCategoryDescription = (categoryId: CategoryId): string => {
     case 'items':
       return 'категория: предметы';
     case 'emotions':
-      return 'категория: эмоции';
+      return 'категория: эмоции и поведение';
     case 'characters':
       return 'категория: персонажи';
-    case 'actions':
-      return 'категория: действия';
+    case 'world':
+      return 'категория: мир и путешествия';
+    case 'gaming':
+      return 'категория: гейминг';
+    case 'tech':
+      return 'категория: технологии и IT';
+    case 'party':
+      return 'категория: вечеринка';
+    case 'kazakhstan':
+      return 'категория: Казахстан';
+    case 'kyrgyzstan':
+      return 'категория: Кыргызстан';
+    case 'uzbekistan':
+      return 'категория: Узбекистан';
+    case 'russia':
+      return 'категория: Россия';
+    case 'school':
+      return 'категория: школа и универ';
+    case 'work':
+      return 'категория: работа и офис';
+    case 'memes':
+      return 'категория: мемы и сленг';
     default:
       return 'категория: игровое слово';
+
   }
 };

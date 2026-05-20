@@ -33,7 +33,11 @@ const nextConfig = {
 
   // ── PWA & Performance ──────────────────────────────────────────────────────
   reactStrictMode: true,
-  swcMinify: true,
+  // ── Skip type-check & lint during Capacitor build to save memory ─────────
+  ...(isCapBuild && {
+    typescript: { ignoreBuildErrors: true },
+    eslint: { ignoreDuringBuilds: true },
+  }),
 
   // ── Compiler optimizations ─────────────────────────────────────────────────
   compiler: {
@@ -41,9 +45,8 @@ const nextConfig = {
   },
 
   // ── Headers for PWA / mobile ───────────────────────────────────────────────
+  ...(!isCapBuild && {
   async headers() {
-    if (isCapBuild) return [];
-
     return [
       {
         source: '/(.*)',
@@ -68,6 +71,7 @@ const nextConfig = {
       },
     ];
   },
+  }),
 };
 
-module.exports = withPWA(nextConfig);
+module.exports = isCapBuild ? nextConfig : withPWA(nextConfig);
