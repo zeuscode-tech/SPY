@@ -13,7 +13,6 @@ import {
   CATEGORIES,
   getAllLocations,
   type CategoryId,
-  type Category,
   DEFAULT_CATEGORY_IDS,
 } from "../data/themes";
 import {
@@ -268,6 +267,12 @@ const moviesWordPool: string[] = [
   ...moviesWords.moviesWords.plots,
 ];
 
+// Special packs already existed in game logic but were not selectable in the UI.
+const EXTRA_CATEGORIES = [
+  { id: "anime" as const, name: "Аниме", emoji: "🍥", locations: animeWordPool },
+  { id: "movies" as const, name: "Кино — спецнабор", emoji: "🎬", locations: moviesWordPool },
+];
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
@@ -345,13 +350,13 @@ const PillButton: React.FC<PillButtonProps> = ({
   const getStyle = (): React.CSSProperties => {
     switch (variant) {
       case "primary":
-        return { background: "linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)" };
+        return { background: "linear-gradient(135deg, #E83449 0%, #FF7A59 100%)" };
       case "danger":
         return { background: "linear-gradient(135deg, #FF3B30 0%, #FF6B6B 100%)" };
       case "success":
         return { background: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" };
       case "outline":
-        return { borderColor: "#D946EF" };
+        return { borderColor: "#FF525E" };
       default:
         return {};
     }
@@ -360,7 +365,7 @@ const PillButton: React.FC<PillButtonProps> = ({
   const getClass = (): string => {
     switch (variant) {
       case "primary":
-        return "text-white font-bold shadow-[0_4px_24px_rgba(139,92,246,0.4)]";
+        return "text-white font-bold shadow-[0_4px_24px_rgba(232,52,73,0.4)]";
       case "danger":
         return "text-white font-bold shadow-[0_4px_20px_rgba(255,59,48,0.4)]";
       case "success":
@@ -368,7 +373,7 @@ const PillButton: React.FC<PillButtonProps> = ({
       case "ghost":
         return "backdrop-blur-[14px] border border-white/[0.10] text-white bg-white/[0.07]";
       case "outline":
-        return "bg-transparent border text-[#D946EF]";
+        return "bg-transparent border text-[#FF525E]";
       default:
         return "";
     }
@@ -407,9 +412,9 @@ const GlassCard: React.FC<{
     className={`rounded-[20px] border backdrop-blur-[20px] ${className}`}
     style={{
       background: "linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.03) 100%)",
-      borderColor: glow ? "rgba(217,70,239,0.22)" : "rgba(255,255,255,0.07)",
+      borderColor: glow ? "rgba(255,82,94,0.22)" : "rgba(255,255,255,0.07)",
       boxShadow: glow
-        ? "0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 40px rgba(139,92,246,0.05)"
+        ? "0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 40px rgba(232,52,73,0.05)"
         : "0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)",
     }}
   >
@@ -421,7 +426,7 @@ const CoralDivider: React.FC = () => (
   <div
     className="w-full h-px my-4"
     style={{
-      background: "linear-gradient(90deg, transparent 0%, rgba(139,92,246,0.55) 50%, transparent 100%)",
+      background: "linear-gradient(90deg, transparent 0%, rgba(232,52,73,0.55) 50%, transparent 100%)",
     }}
   />
 );
@@ -756,7 +761,7 @@ export default function GameComponent(): JSX.Element {
     event.currentTarget.setPointerCapture(event.pointerId);
     const rect = event.currentTarget.getBoundingClientRect();
     const radius = 48;
-    const colors = ["#D946EF", "#22D3EE", "#F59E0B", "#10B981", "#F43F5E", "#8B5CF6", "#84CC16", "#06B6D4"];
+    const colors = ["#FF525E", "#FFC857", "#F59E0B", "#10B981", "#F43F5E", "#E83449", "#84CC16", "#06B6D4"];
     setFingerTouches((prev) => {
       if (prev.length >= settings.playersCount) return prev;
       const touchId = Date.now() + event.pointerId + randomInt(1, 9999);
@@ -879,11 +884,11 @@ export default function GameComponent(): JSX.Element {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="text-6xl font-cyber font-black tracking-widest"
           style={{
-            background: "linear-gradient(135deg, #8B5CF6, #EC4899, #D946EF)",
+            background: "linear-gradient(135deg, #E83449, #FF7A59, #FF525E)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
-            filter: "drop-shadow(0 0 28px rgba(139,92,246,0.35))",
+            filter: "drop-shadow(0 0 28px rgba(232,52,73,0.35))",
           }}
         >
           SPY
@@ -894,7 +899,7 @@ export default function GameComponent(): JSX.Element {
           transition={{ delay: 0.3 }}
           className="text-[10px] tracking-[0.5em] text-white/40 mt-1 font-sans uppercase"
         >
-          УЛЬТИМАТИВНОЕ ИЗДАНИЕ
+          ИГРА ДЛЯ КОМПАНИИ
         </motion.p>
       </div>
 
@@ -920,7 +925,7 @@ export default function GameComponent(): JSX.Element {
               });
             }}
             className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold text-white select-none"
-            style={{ background: "linear-gradient(135deg, #8B5CF6, #EC4899)" }}
+            style={{ background: "linear-gradient(135deg, #E83449, #FF7A59)" }}
           >
             −
           </motion.button>
@@ -929,7 +934,7 @@ export default function GameComponent(): JSX.Element {
             <span
               className="text-6xl font-cyber font-black"
               style={{
-                background: "linear-gradient(135deg, #8B5CF6, #EC4899)",
+                background: "linear-gradient(135deg, #E83449, #FF7A59)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
@@ -947,7 +952,7 @@ export default function GameComponent(): JSX.Element {
             onClick={() => {
               vibrate(20);
               setSettings((prev) => {
-                const nextPlayers = Math.min(50, prev.playersCount + 1);
+                const nextPlayers = Math.min(12, prev.playersCount + 1);
                 return {
                   ...prev,
                   playersCount: nextPlayers,
@@ -956,7 +961,7 @@ export default function GameComponent(): JSX.Element {
               });
             }}
             className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold text-white select-none"
-            style={{ background: "linear-gradient(135deg, #8B5CF6, #EC4899)" }}
+            style={{ background: "linear-gradient(135deg, #E83449, #FF7A59)" }}
           >
             +
           </motion.button>
@@ -976,7 +981,7 @@ export default function GameComponent(): JSX.Element {
               setSettings((prev) => ({ ...prev, spyCount: Math.max(1, prev.spyCount - 1) }));
             }}
             className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold text-white select-none"
-            style={{ background: "linear-gradient(135deg, #8B5CF6, #EC4899)" }}
+            style={{ background: "linear-gradient(135deg, #E83449, #FF7A59)" }}
           >
             −
           </motion.button>
@@ -985,7 +990,7 @@ export default function GameComponent(): JSX.Element {
             <span
               className="text-6xl font-cyber font-black"
               style={{
-                background: "linear-gradient(135deg, #8B5CF6, #EC4899)",
+                background: "linear-gradient(135deg, #E83449, #FF7A59)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
@@ -1008,7 +1013,7 @@ export default function GameComponent(): JSX.Element {
               }));
             }}
             className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold text-white select-none"
-            style={{ background: "linear-gradient(135deg, #8B5CF6, #EC4899)" }}
+            style={{ background: "linear-gradient(135deg, #E83449, #FF7A59)" }}
           >
             +
           </motion.button>
@@ -1039,9 +1044,9 @@ export default function GameComponent(): JSX.Element {
                 style={
                   selected
                     ? {
-                        background: "rgba(217,70,239,0.12)",
-                        borderColor: "#D946EF",
-                        boxShadow: "inset 0 0 16px rgba(217,70,239,0.12), 0 0 0 1px rgba(217,70,239,0.35)",
+                        background: "rgba(255,82,94,0.12)",
+                        borderColor: "#FF525E",
+                        boxShadow: "inset 0 0 16px rgba(255,82,94,0.12), 0 0 0 1px rgba(255,82,94,0.35)",
                       }
                     : {}
                 }
@@ -1068,7 +1073,7 @@ export default function GameComponent(): JSX.Element {
             className="rounded-[14px] border p-3 text-left transition-all duration-200"
             style={
               settings.gameMode === "classic"
-                ? { borderColor: "rgba(217,70,239,0.45)", background: "rgba(217,70,239,0.09)" }
+                ? { borderColor: "rgba(255,82,94,0.45)", background: "rgba(255,82,94,0.09)" }
                 : { borderColor: "rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }
             }
           >
@@ -1089,7 +1094,7 @@ export default function GameComponent(): JSX.Element {
             className="rounded-[14px] border p-3 text-left transition-all duration-200"
             style={
               settings.gameMode === "different-word"
-                ? { borderColor: "rgba(217,70,239,0.45)", background: "rgba(217,70,239,0.09)" }
+                ? { borderColor: "rgba(255,82,94,0.45)", background: "rgba(255,82,94,0.09)" }
                 : { borderColor: "rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }
             }
           >
@@ -1120,7 +1125,7 @@ export default function GameComponent(): JSX.Element {
           </span>
         ) : (
           <div className="grid grid-cols-2 gap-2">
-            {CATEGORIES.filter((c) => settings.selectedCategories.includes(c.id)).map((c) => (
+            {[...CATEGORIES, ...EXTRA_CATEGORIES].filter((c) => settings.selectedCategories.includes(c.id)).map((c) => (
               <div
                 key={c.id}
                 className="flex items-center gap-2.5 p-3 rounded-[14px] backdrop-blur-[10px]"
@@ -1193,14 +1198,14 @@ export default function GameComponent(): JSX.Element {
       <div className="flex items-center gap-4 pt-6">
         <button
           onClick={() => { vibrate(20); setPhase("setup"); }}
-          className="text-[#D946EF]/70 text-2xl"
+          className="text-[#FF525E]/70 text-2xl"
         >
           ←
         </button>
         <h2
           className="text-xl font-cyber font-bold tracking-widest"
           style={{
-            background: "linear-gradient(135deg, #8B5CF6, #EC4899)",
+            background: "linear-gradient(135deg, #E83449, #FF7A59)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
@@ -1211,7 +1216,7 @@ export default function GameComponent(): JSX.Element {
       </div>
 
       <p className="text-xs text-white/40 font-sans">
-        Нажмите для выбора. Выбрано: {settings.selectedCategories.length}/{CATEGORIES.length}
+        Нажмите для выбора. Выбрано: {settings.selectedCategories.length}/{CATEGORIES.length + EXTRA_CATEGORIES.length}
       </p>
 
       <motion.div
@@ -1220,7 +1225,7 @@ export default function GameComponent(): JSX.Element {
         animate="animate"
         className="flex flex-col gap-3 pb-8"
       >
-        {CATEGORIES.map((cat: Category) => {
+        {[...CATEGORIES, ...EXTRA_CATEGORIES].map((cat) => {
           const selected = settings.selectedCategories.includes(cat.id);
           return (
             <motion.div key={cat.id} variants={staggerItem}>
@@ -1230,12 +1235,12 @@ export default function GameComponent(): JSX.Element {
                 className="w-full p-4 rounded-[18px] border text-left transition-all duration-300 backdrop-blur-[20px]"
                 style={{
                   background: selected
-                    ? "linear-gradient(135deg, rgba(139,92,246,0.09) 0%, rgba(217,70,239,0.03) 100%)"
+                    ? "linear-gradient(135deg, rgba(232,52,73,0.09) 0%, rgba(255,82,94,0.03) 100%)"
                     : "rgba(255,255,255,0.02)",
                   borderColor: selected
-                    ? "rgba(217,70,239,0.3)"
+                    ? "rgba(255,82,94,0.3)"
                     : "rgba(255,255,255,0.06)",
-                  boxShadow: selected ? "0 0 20px rgba(139,92,246,0.06)" : "none",
+                  boxShadow: selected ? "0 0 20px rgba(232,52,73,0.06)" : "none",
                 }}
               >
                 <div className="flex items-center justify-between">
@@ -1253,8 +1258,8 @@ export default function GameComponent(): JSX.Element {
                   <div
                     className="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200"
                     style={{
-                      borderColor: selected ? "#D946EF" : "rgba(255,255,255,0.2)",
-                      background: selected ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "transparent",
+                      borderColor: selected ? "#FF525E" : "rgba(255,255,255,0.2)",
+                      background: selected ? "linear-gradient(135deg, #E83449, #FF7A59)" : "transparent",
                     }}
                   >
                     {selected && <span className="text-white text-xs font-bold">✓</span>}
@@ -1296,10 +1301,10 @@ export default function GameComponent(): JSX.Element {
 
     const showExplicitSpyRole = spy && !disguisedSpyMode;
     const doneVariant: PillButtonProps["variant"] = showExplicitSpyRole ? "danger" : "success";
-    const cardAccent = showExplicitSpyRole ? "#FF3B30" : "#D946EF";
+    const cardAccent = showExplicitSpyRole ? "#FF3B30" : "#FF525E";
     const cardGlow = showExplicitSpyRole
       ? "rgba(255,59,48,0.28)"
-      : "rgba(139,92,246,0.24)";
+      : "rgba(232,52,73,0.24)";
 
     return (
       <motion.div
@@ -1346,7 +1351,7 @@ export default function GameComponent(): JSX.Element {
                 className="absolute inset-0 rounded-[30px] border border-white/[0.10]"
                 style={{
                   transform: "translateY(9px) scale(0.97) rotate(2deg)",
-                  background: "linear-gradient(145deg, rgba(217,70,239,0.10), rgba(255,255,255,0.025))",
+                  background: "linear-gradient(145deg, rgba(255,82,94,0.10), rgba(255,255,255,0.025))",
                   boxShadow: "0 16px 42px rgba(0,0,0,0.42)",
                 }}
               />
@@ -1388,25 +1393,25 @@ export default function GameComponent(): JSX.Element {
                 background: isRoleVisible
                   ? showExplicitSpyRole
                     ? "linear-gradient(145deg, rgba(255,59,48,0.18), rgba(20,8,10,0.94))"
-                    : "linear-gradient(145deg, rgba(139,92,246,0.18), rgba(10,10,14,0.94))"
-                  : "linear-gradient(145deg, rgba(255,255,255,0.11), rgba(255,255,255,0.03)), radial-gradient(circle at 50% 0%, rgba(217,70,239,0.18), transparent 55%)",
-                boxShadow: `0 24px 70px rgba(0,0,0,0.6), 0 0 ${isRoleVisible ? "42px" : "18px"} ${isRoleVisible ? cardGlow : "rgba(217,70,239,0.12)"}, inset 0 1px 0 rgba(255,255,255,0.12)`,
+                    : "linear-gradient(145deg, rgba(232,52,73,0.18), rgba(10,10,14,0.94))"
+                  : "linear-gradient(145deg, rgba(255,255,255,0.11), rgba(255,255,255,0.03)), radial-gradient(circle at 50% 0%, rgba(255,82,94,0.18), transparent 55%)",
+                boxShadow: `0 24px 70px rgba(0,0,0,0.6), 0 0 ${isRoleVisible ? "42px" : "18px"} ${isRoleVisible ? cardGlow : "rgba(255,82,94,0.12)"}, inset 0 1px 0 rgba(255,255,255,0.12)`,
               }}
             >
               {!isRoleVisible && (
                 <>
-                  <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 50% 20%, rgba(236,72,153,0.24), transparent 34%), radial-gradient(circle at 50% 82%, rgba(34,211,238,0.14), transparent 32%)" }} />
-                  <div className="absolute inset-[16px] rounded-[24px] border border-[#D946EF]/25" />
+                  <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 50% 20%, rgba(255,122,89,0.24), transparent 34%), radial-gradient(circle at 50% 82%, rgba(255,200,87,0.14), transparent 32%)" }} />
+                  <div className="absolute inset-[16px] rounded-[24px] border border-[#FF525E]/25" />
                   <div className="absolute inset-[30px] rounded-[19px] border border-white/[0.08]" />
-                  <div className="absolute inset-[48px] rounded-[16px] border border-[#22D3EE]/10" />
-                  <div className="absolute h-56 w-56 rounded-full border border-[#D946EF]/25" />
+                  <div className="absolute inset-[48px] rounded-[16px] border border-[#FFC857]/10" />
+                  <div className="absolute h-56 w-56 rounded-full border border-[#FF525E]/25" />
                   <div className="absolute h-40 w-40 rounded-full border border-white/[0.08]" />
-                  <div className="absolute h-24 w-24 rotate-45 rounded-[18px] border border-[#F0ABFC]/35 bg-white/[0.03]" />
-                  <div className="absolute h-14 w-14 rotate-45 rounded-[12px]" style={{ background: "linear-gradient(135deg, rgba(217,70,239,0.42), rgba(34,211,238,0.18))", boxShadow: "0 0 34px rgba(217,70,239,0.34)" }} />
-                  <div className="absolute inset-x-10 top-24 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(217,70,239,0.62), transparent)" }} />
-                  <div className="absolute inset-x-10 bottom-24 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(34,211,238,0.38), transparent)" }} />
-                  <div className="absolute left-9 top-16 h-2 w-2 rounded-full bg-[#F0ABFC]/70 shadow-[0_0_18px_rgba(240,171,252,0.7)]" />
-                  <div className="absolute right-9 bottom-16 h-2 w-2 rounded-full bg-[#22D3EE]/60 shadow-[0_0_18px_rgba(34,211,238,0.6)]" />
+                  <div className="absolute h-24 w-24 rotate-45 rounded-[18px] border border-[#FFC4B0]/35 bg-white/[0.03]" />
+                  <div className="absolute h-14 w-14 rotate-45 rounded-[12px]" style={{ background: "linear-gradient(135deg, rgba(255,82,94,0.42), rgba(255,200,87,0.18))", boxShadow: "0 0 34px rgba(255,82,94,0.34)" }} />
+                  <div className="absolute inset-x-10 top-24 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(255,82,94,0.62), transparent)" }} />
+                  <div className="absolute inset-x-10 bottom-24 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(255,200,87,0.38), transparent)" }} />
+                  <div className="absolute left-9 top-16 h-2 w-2 rounded-full bg-[#FFC4B0]/70 shadow-[0_0_18px_rgba(255,196,176,0.7)]" />
+                  <div className="absolute right-9 bottom-16 h-2 w-2 rounded-full bg-[#FFC857]/60 shadow-[0_0_18px_rgba(255,200,87,0.6)]" />
                 </>
               )}
 
@@ -1436,12 +1441,12 @@ export default function GameComponent(): JSX.Element {
                     ) : (
                       <>
                         <div className="flex flex-col items-center gap-1 max-w-[220px]">
-                          <span className="text-lg font-cyber font-bold tracking-wide text-center" style={{ background: "linear-gradient(135deg, #8B5CF6, #EC4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                          <span className="text-lg font-cyber font-bold tracking-wide text-center" style={{ background: "linear-gradient(135deg, #E83449, #FF7A59)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                             {visibleWord}
                           </span>
                           <span className="text-[11px] leading-relaxed font-sans text-white/65 text-center">({visibleWordHint})</span>
                         </div>
-                        {!disguisedSpyMode && <span className="text-xs font-sans text-[#D946EF]/70">Ты не шпион</span>}
+                        {!disguisedSpyMode && <span className="text-xs font-sans text-[#FF525E]/70">Ты не шпион</span>}
                         {spy && <span className="text-[11px] leading-relaxed font-sans text-red-400/80 max-w-[220px] text-center">{otherSpiesNote}</span>}
                       </>
                     )}
@@ -1450,7 +1455,7 @@ export default function GameComponent(): JSX.Element {
                   <motion.div key="hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center gap-3">
                     <span className="text-6xl opacity-85 relative z-10">?</span>
                     <span className="text-sm font-sans text-white/60 tracking-widest uppercase relative z-10">Карта игрока</span>
-                    <span className="text-3xl font-cyber font-black" style={{ color: "#D946EF", textShadow: "0 0 24px rgba(217,70,239,0.55)" }}>
+                    <span className="text-3xl font-cyber font-black" style={{ color: "#FF525E", textShadow: "0 0 24px rgba(255,82,94,0.55)" }}>
                       {currentPlayer + 1}
                     </span>
                   </motion.div>
@@ -1487,7 +1492,7 @@ export default function GameComponent(): JSX.Element {
         <h2
           className="text-3xl font-cyber font-black tracking-widest"
           style={{
-            background: "linear-gradient(135deg, #8B5CF6, #EC4899)",
+            background: "linear-gradient(135deg, #E83449, #FF7A59)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
@@ -1640,7 +1645,7 @@ export default function GameComponent(): JSX.Element {
     const strokeDash = circumference * progress;
     const isUrgent = timerSeconds <= 30;
     const isEnded = timerSeconds === 0;
-    const timerColor = isUrgent ? "#FF3B30" : "#D946EF";
+    const timerColor = isUrgent ? "#FF3B30" : "#FF525E";
 
     return (
       <motion.div
@@ -1652,7 +1657,7 @@ export default function GameComponent(): JSX.Element {
         className="flex flex-col min-h-screen p-6 gap-5 overflow-y-auto"
       >
         <div className="flex items-center justify-between pt-6">
-          <h2 className="text-xl font-cyber font-bold tracking-widest" style={{ background: isUrgent ? "linear-gradient(135deg, #FF3B30, #FF6B6B)" : "linear-gradient(135deg, #8B5CF6, #EC4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+          <h2 className="text-xl font-cyber font-bold tracking-widest" style={{ background: isUrgent ? "linear-gradient(135deg, #FF3B30, #FF6B6B)" : "linear-gradient(135deg, #E83449, #FF7A59)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
             {isEnded ? "⚠ ВРЕМЯ ВЫШЛО" : "▶ ИГРА ИДЁТ"}
           </h2>
           <PillButton variant="ghost" size="sm" onClick={() => { vibrate([20, 20]); setIsTimerRunning(false); setPhase("setup"); }}>✕ Выйти</PillButton>
@@ -1682,8 +1687,8 @@ export default function GameComponent(): JSX.Element {
 
         <GlassCard className="p-4" glow={showLocationList}>
           <button className="w-full flex items-center justify-between" onClick={() => { vibrate(20); setShowLocationList((prev) => !prev); }}>
-            <span className="font-sans text-sm text-[#D946EF]/80 tracking-widest uppercase">🗺️ Возможные места ({allGameLocations.length})</span>
-            <motion.span animate={{ rotate: showLocationList ? 180 : 0 }} className="text-[#D946EF]/60 text-lg">▾</motion.span>
+            <span className="font-sans text-sm text-[#FF525E]/80 tracking-widest uppercase">🗺️ Возможные места ({allGameLocations.length})</span>
+            <motion.span animate={{ rotate: showLocationList ? 180 : 0 }} className="text-[#FF525E]/60 text-lg">▾</motion.span>
           </button>
           <AnimatePresence>
             {showLocationList && (
@@ -1691,7 +1696,7 @@ export default function GameComponent(): JSX.Element {
                 <div className="pt-4 grid grid-cols-2 gap-2">
                   {allGameLocations.map((loc) => (
                     <div key={loc.raw} className="text-xs px-2.5 py-2 rounded-[10px] font-sans border border-white/[0.05] bg-white/[0.02]">
-                      <div style={{ color: "#D946EF", opacity: 0.8 }}>{loc.word}</div>
+                      <div style={{ color: "#FF525E", opacity: 0.8 }}>{loc.word}</div>
                       <div className="text-[10px] leading-relaxed text-white/40 mt-1">({loc.description})</div>
                     </div>
                   ))}
@@ -1726,8 +1731,8 @@ export default function GameComponent(): JSX.Element {
       className="flex flex-col min-h-screen p-6 gap-5 overflow-y-auto"
     >
       <div className="flex items-center gap-4 pt-6">
-        <button onClick={() => { vibrate(20); setPhase("setup"); }} className="text-[#D946EF]/70 text-2xl">←</button>
-        <h2 className="text-xl font-cyber font-bold tracking-widest" style={{ background: "linear-gradient(135deg, #8B5CF6, #EC4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Настройки</h2>
+        <button onClick={() => { vibrate(20); setPhase("setup"); }} className="text-[#FF525E]/70 text-2xl">←</button>
+        <h2 className="text-xl font-cyber font-bold tracking-widest" style={{ background: "linear-gradient(135deg, #E83449, #FF7A59)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Настройки</h2>
       </div>
 
       <GlassCard className="p-5">
@@ -1738,14 +1743,14 @@ export default function GameComponent(): JSX.Element {
               <span className="text-[10px] font-cyber text-white/30 w-4">{i + 1}</span>
               <input
                 type="text"
-                value={settings.playerNames[i] || "Неизвестно"}
+                value={settings.playerNames[i] ?? ""}
                 onChange={(e) => {
                   const newNames = [...settings.playerNames];
                   newNames[i] = e.target.value;
                   setSettings((prev) => ({ ...prev, playerNames: newNames }));
                 }}
                 placeholder={`Игрок ${i + 1}`}
-                className="flex-1 bg-white/[0.04] border border-white/[0.07] rounded-[10px] px-3 py-2 text-sm font-sans text-white placeholder-white/20 focus:outline-none focus:border-[#D946EF]/40 transition-all"
+                className="flex-1 bg-white/[0.04] border border-white/[0.07] rounded-[10px] px-3 py-2 text-sm font-sans text-white placeholder-white/20 focus:outline-none focus:border-[#FF525E]/40 transition-all"
                 maxLength={15}
               />
             </div>
@@ -1814,7 +1819,7 @@ export default function GameComponent(): JSX.Element {
       >
         <div className="space-y-2">
           <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-7xl mb-4">🏁</motion.div>
-          <h2 className="text-4xl font-cyber font-black tracking-widest text-[#D946EF]">ИГРА ОКОНЧЕНА</h2>
+          <h2 className="text-4xl font-cyber font-black tracking-widest text-[#FF525E]">ИГРА ОКОНЧЕНА</h2>
           <p className="text-white/40 font-sans uppercase tracking-[0.2em] text-xs">Время вышло или шпион раскрыт</p>
         </div>
         <GlassCard className="w-full p-6 space-y-6">
