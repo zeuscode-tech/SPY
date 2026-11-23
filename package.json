@@ -8,11 +8,11 @@
     "start": "next start -H 0.0.0.0 -p 3000",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "build:cap": "set CAPACITOR_BUILD=true&& next build",
+    "build:cap": "node scripts/build-capacitor.mjs",
     "cap:sync": "npm run build:cap && npx cap sync android",
     "cap:open": "npx cap open android",
-    "android:apk": "npm run cap:sync && cd android && gradlew.bat assembleDebug",
-    "android:aab": "npm run cap:sync && cd android && gradlew.bat bundleRelease"
+    "android:apk": "node scripts/build-android.mjs apk",
+    "android:aab": "node scripts/build-android.mjs aab"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.0",
