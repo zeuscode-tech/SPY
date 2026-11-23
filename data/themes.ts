@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // themes.ts  –  Spy Game Word Database
-// 8 categories × 100 unique words each
+// 21 main categories with varying pack sizes; see CATEGORIES below
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type CategoryId =
