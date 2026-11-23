@@ -12,6 +12,8 @@ jobs:
         with:
           node-version: "22"
           cache: npm
+      # The legacy lockfile is currently incomplete; repair it before a clean install.
+      - run: npm install --package-lock-only --ignore-scripts
       - run: npm ci
       - run: npm run type-check
       - run: npm run build:cap
