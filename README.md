@@ -10,6 +10,7 @@ Next.js 15, React 18, TypeScript, Tailwind CSS, Framer Motion, Capacitor Android
 npm ci
 npm run dev
 npm run type-check
+npm test
 ```
 
 ## Android builds (macOS, Linux, Windows)
