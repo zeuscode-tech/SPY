@@ -17,7 +17,13 @@ function run(command, args, options = {}) {
 }
 
 run(process.execPath, [join("scripts", "build-capacitor.mjs")]);
-const npx = process.platform === "win32" ? "npx.cmd" : "npx";
-run(npx, ["cap", "sync", "android"]);
-const gradle = process.platform === "win32" ? "gradlew.bat" : "./gradlew";
-run(gradle, [tasks[mode]], { cwd: join(process.cwd(), "android") });
+if (process.platform === "win32") {
+  run("cmd.exe", ["/d", "/s", "/c", "npx", "cap", "sync", "android"]);
+  run("cmd.exe", ["/d", "/s", "/c", "gradlew.bat", tasks[mode]], {
+    cwd: join(process.cwd(), "android"),
+  });
+} else {
+  run("npx", ["cap", "sync", "android"]);
+  // The wrapper is not executable in the currently committed tree; invoke via sh.
+  run("sh", ["./gradlew", tasks[mode]], { cwd: join(process.cwd(), "android") });
+}
