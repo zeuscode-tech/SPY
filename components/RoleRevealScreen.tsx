@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence, type PanInfo } from "framer-motion";
 
 export type SwipeExit = { x: number; y: number; rotate: number };
@@ -45,7 +46,18 @@ export default function RoleRevealScreen({
   onNext,
 }: RoleRevealScreenProps): JSX.Element {
   const showExplicitSpy = isSpy && !disguisedSpyMode;
-  const canPass = hasViewedRole && !isRoleVisible && !isCardLeaving;
+  // A hidden role is not safe to hand over until the flip-back animation finishes.
+  const [cardHiddenAfterFlip, setCardHiddenAfterFlip] = useState(false);
+  useEffect(() => {
+    if (isRoleVisible || !hasViewedRole) {
+      setCardHiddenAfterFlip(false);
+      return;
+    }
+    const timeout = window.setTimeout(() => setCardHiddenAfterFlip(true), 520);
+    return () => window.clearTimeout(timeout);
+  }, [isRoleVisible, hasViewedRole, playerIndex]);
+
+  const canPass = hasViewedRole && !isRoleVisible && !isCardLeaving && cardHiddenAfterFlip;
 
   return (
     <motion.main
@@ -83,8 +95,8 @@ export default function RoleRevealScreen({
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 translate-y-3 scale-[0.96] rounded-[28px] border border-white/10 bg-[#191519]" />
         )}
         <motion.div
-          onPan={(_, info) => { if (!isCardLeaving) onPan(info); }}
-          onPanEnd={(_, info) => { if (!isCardLeaving) onPanEnd(info); }}
+          onPan={(_, info) => { if (canPass) onPan(info); }}
+          onPanEnd={(_, info) => { if (canPass) onPanEnd(info); }}
           animate={isCardLeaving
             ? { ...cardExit, opacity: 0 }
             : { x: panOffset.x, y: panOffset.y, rotate: panOffset.x / 16, opacity: 1 }}
