@@ -120,6 +120,7 @@ async function cdpConnection() {
 
 async function main() {
   let cdp;
+  let networkDisabled = false;
   try {
     screenshot("00-launch");
     cdp = await cdpConnection();
@@ -171,9 +172,45 @@ async function main() {
       throw Error(`Button absent/disabled: ${needle}`);
     };
 
+    adb("shell", "svc", "wifi", "disable");
+    adb("shell", "svc", "data", "disable");
+    networkDisabled = true;
+    await cdp.send("Page.reload", { ignoreCache: true });
+    await sleep(1000);
     await waitFor("Найди");
+    result("Offline WebView reload reaches SPY setup", true, "Wi-Fi and mobile data disabled by ADB");
     result("Debug app opens into SPY 2.0 setup", true);
     screenshot("01-setup");
+
+    await click("Открыть настройки", "aria");
+    await waitFor("Настройки");
+    const nameEntered = await evaluate(`(() => {
+      const input = document.querySelector('input[placeholder="Игрок 1"]');
+      if (!input) return false;
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+      setter?.call(input, "Алиса");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      return true;
+    })()`);
+    assert.ok(nameEntered, "Player-name input missing in settings");
+    await waitForValue(
+      `document.querySelector('input[placeholder="Игрок 1"]')?.value === "Алиса"`,
+      "Player name did not update",
+    );
+    await click("Сохранить и вернуться");
+    await waitFor("Найди");
+    await cdp.send("Page.reload", { ignoreCache: true });
+    await sleep(1000);
+    await waitFor("Найди");
+    await click("Открыть настройки", "aria");
+    await waitFor("Настройки");
+    await waitForValue(
+      `document.querySelector('input[placeholder="Игрок 1"]')?.value === "Алиса"`,
+      "Player name did not persist after reload",
+    );
+    await click("Сохранить и вернуться");
+    await waitFor("Найди");
+    result("Settings save player name locally and persist offline", true);
 
     await click("Изменить");
     await waitFor("Твой набор");
@@ -208,6 +245,7 @@ async function main() {
     await waitFor("Начать игру");
     await click("Начать игру");
     await waitFor("Секретная карта");
+    await waitFor("Алиса");
     screenshot("03-role-hidden");
 
     for (let i = 0; i < 5; i++) {
@@ -228,6 +266,18 @@ async function main() {
     screenshot("06-timer");
     result("Starter skip reaches discussion timer", true);
 
+    await click("Сбросить таймер", "aria");
+    await waitFor("Сбросить таймер?");
+    await click("Подтвердить");
+    await waitForValue(`(() => {
+      const timer = document.querySelector('[role="timer"]');
+      return timer?.getAttribute("aria-label") === "Осталось 8 минут 0 секунд"
+        && document.body.innerText.toLocaleLowerCase("ru").includes("таймер на паузе");
+    })()`, "Timer did not reset to 8:00 and pause");
+    result("Timer reset returns to configured duration and pauses", true);
+
+    await click("Продолжить");
+    await waitFor("Обсуждение идёт");
     await click("Пауза");
     await waitFor("Таймер на паузе");
     await click("Продолжить");
@@ -250,20 +300,80 @@ async function main() {
     result("Replay starts new round", true);
     screenshot("08-replay");
 
-    // Known open Android Back issue: record without treating it as a new regression.
+    await click("Открыть секретную роль", "aria");
+    await waitFor("Только для тебя");
     adb("shell", "input", "keyevent", "KEYCODE_BACK");
-    await sleep(800);
+    await waitForValue(`(() => {
+      const card = document.querySelector('button[aria-label="Открыть секретную роль"]');
+      return card?.getAttribute("aria-pressed") === "false";
+    })()`, "Android Back did not hide the visible secret role");
+    result("Android Back hides a visible secret role", true);
+    screenshot("09-back-hides-role");
+
+    adb("shell", "input", "keyevent", "KEYCODE_BACK");
+    await waitFor("Найди");
     const activity = adb("shell", "dumpsys", "activity", "activities");
     const resumed = /mResumedActivity|topResumedActivity/.test(activity)
       ? activity.split("\n").filter((line) => /mResumedActivity|topResumedActivity/.test(line)).slice(-2).join("; ")
       : "Resumed activity not found in dump";
-    note("Android Back navigation", `Known QA-002; after Back: ${resumed.slice(0,220)}`);
-    note("Multi-touch and background timer", "Require manual Android interaction; not asserted by CDP smoke");
+    assert.ok(resumed.includes(PACKAGE), `Android Back exited SPY: ${resumed}`);
+    result("Android Back returns to setup without revealing another role", true, resumed.slice(0,220));
+    screenshot("10-back-setup");
+
+    await click("Другое слово");
+    await click("Начать игру");
+    await waitFor("Секретная карта");
+    const differentWords = new Set();
+    for (let i = 0; i < 5; i++) {
+      await click("Открыть секретную роль", "aria");
+      await waitFor("Только для тебя");
+      const word = await evaluate(`document.querySelector('button[aria-pressed="true"] h2')?.innerText || ""`);
+      assert.ok(word, `Different-word role ${i + 1} has no word`);
+      differentWords.add(normalizeUiText(word));
+      await click("Скрыть роль");
+      await sleep(600);
+      await click(i === 4 ? "Перейти к игре" : "Следующий игрок");
+      if (i !== 4) await waitFor("Секретная карта");
+    }
+    assert.equal(differentWords.size, 2, "Different-word mode must assign exactly two distinct words");
+    result("Different-word mode gives five players exactly two distinct role words", true);
+
+    await waitFor("Кто");
+    const contactsAdded = await evaluate(`(() => {
+      const field = document.querySelector('[aria-label="Поле случайного выбора начинающего игрока"]');
+      if (!field) return false;
+      field.setPointerCapture = () => {};
+      const rect = field.getBoundingClientRect();
+      const points = [[.2,.3],[.4,.4],[.6,.3],[.3,.7],[.7,.7]];
+      points.forEach(([x, y], index) => field.dispatchEvent(new PointerEvent("pointerdown", {
+        bubbles: true,
+        pointerId: index + 1,
+        pointerType: "touch",
+        isPrimary: index === 0,
+        clientX: rect.left + rect.width * x,
+        clientY: rect.top + rect.height * y,
+      })));
+      return true;
+    })()`);
+    assert.ok(contactsAdded, "Starter multi-contact field missing");
+    await waitFor("5 из 5 точек");
+    await waitFor("Выбран игрок под красной точкой", 9000);
+    result("Starter selection completes with five WebView pointer contacts", true);
+    screenshot("11-starter-selected");
+    await click("Начать игру");
+    await waitFor("Игра идёт");
+    result("Selected starter reaches discussion timer", true);
+
+    note("Physical simultaneous multi-touch hardware", "WebView pointer logic passed; simultaneous hardware contacts require a manual device run");
   } catch (error) {
     console.error("Smoke failed:", error);
     result("Smoke execution", false, String(error));
     screenshot("failure");
   } finally {
+    if (networkDisabled) {
+      try { adb("shell", "svc", "wifi", "enable"); } catch {}
+      try { adb("shell", "svc", "data", "enable"); } catch {}
+    }
     try {
       const proc = spawnSync("adb", ["logcat", "-d", "-v", "brief", "-t", "3000"], {
         encoding: "utf8", maxBuffer: 10 * 1024 * 1024, timeout: 25000,
