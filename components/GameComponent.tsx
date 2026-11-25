@@ -21,6 +21,7 @@ import {
 } from "../data/wordDescriptions";
 import animeWords from "../data/animeWords.json";
 import moviesWords from "../data/moviesWords.json";
+import SetupScreen from "./SetupScreen";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -868,317 +869,43 @@ export default function GameComponent(): JSX.Element {
   // ─────────────────────────────────────────────────────────────────────────
 
   const renderSetup = (): JSX.Element => (
-    <motion.div
-      key="setup"
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="flex flex-col min-h-screen p-6 gap-5 overflow-y-auto"
-    >
-      {/* Header */}
-      <div className="pt-10 pb-2 text-center">
-        <motion.h1
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-6xl font-cyber font-black tracking-widest"
-          style={{
-            background: "linear-gradient(135deg, #E83449, #FF7A59, #FF525E)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-            filter: "drop-shadow(0 0 28px rgba(232,52,73,0.35))",
-          }}
-        >
-          SPY
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.35 }}
-          transition={{ delay: 0.3 }}
-          className="text-[10px] tracking-[0.5em] text-white/40 mt-1 font-sans uppercase"
-        >
-          ИГРА ДЛЯ КОМПАНИИ
-        </motion.p>
-      </div>
-
-      <CoralDivider />
-
-      {/* Player Count */}
-      <GlassCard className="p-5">
-        <p className="text-[10px] tracking-widest text-white/45 mb-4 font-sans uppercase">
-          👥 Количество игроков
-        </p>
-        <div className="flex items-center justify-between gap-4">
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => {
-              vibrate(20);
-              setSettings((prev) => {
-                const nextPlayers = Math.max(3, prev.playersCount - 1);
-                return {
-                  ...prev,
-                  playersCount: nextPlayers,
-                  spyCount: clampSpyCount(prev.spyCount, nextPlayers),
-                };
-              });
-            }}
-            className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold text-white select-none"
-            style={{ background: "linear-gradient(135deg, #E83449, #FF7A59)" }}
-          >
-            −
-          </motion.button>
-
-          <div className="text-center flex-1">
-            <span
-              className="text-6xl font-cyber font-black"
-              style={{
-                background: "linear-gradient(135deg, #E83449, #FF7A59)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              {settings.playersCount}
-            </span>
-            <p className="text-xs text-white/30 mt-1 font-sans">
-              {formatSpyCount(settings.spyCount)}
-            </p>
-          </div>
-
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => {
-              vibrate(20);
-              setSettings((prev) => {
-                const nextPlayers = Math.min(12, prev.playersCount + 1);
-                return {
-                  ...prev,
-                  playersCount: nextPlayers,
-                  spyCount: clampSpyCount(prev.spyCount, nextPlayers),
-                };
-              });
-            }}
-            className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold text-white select-none"
-            style={{ background: "linear-gradient(135deg, #E83449, #FF7A59)" }}
-          >
-            +
-          </motion.button>
-        </div>
-      </GlassCard>
-
-      {/* Spy Count */}
-      <GlassCard className="p-5">
-        <p className="text-[10px] tracking-widest text-white/45 mb-4 font-sans uppercase">
-          🕵️ Количество шпионов
-        </p>
-        <div className="flex items-center justify-between gap-4">
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => {
-              vibrate(20);
-              setSettings((prev) => ({ ...prev, spyCount: Math.max(1, prev.spyCount - 1) }));
-            }}
-            className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold text-white select-none"
-            style={{ background: "linear-gradient(135deg, #E83449, #FF7A59)" }}
-          >
-            −
-          </motion.button>
-
-          <div className="text-center flex-1">
-            <span
-              className="text-6xl font-cyber font-black"
-              style={{
-                background: "linear-gradient(135deg, #E83449, #FF7A59)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              {settings.spyCount}
-            </span>
-            <p className="text-xs text-white/30 mt-1 font-sans">
-              max {Math.max(1, settings.playersCount - 1)}
-            </p>
-          </div>
-
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => {
-              vibrate(20);
-              setSettings((prev) => ({
-                ...prev,
-                spyCount: Math.min(prev.spyCount + 1, Math.max(1, prev.playersCount - 1)),
-              }));
-            }}
-            className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold text-white select-none"
-            style={{ background: "linear-gradient(135deg, #E83449, #FF7A59)" }}
-          >
-            +
-          </motion.button>
-        </div>
-      </GlassCard>
-
-      {/* Timer */}
-      <GlassCard className="p-5">
-        <p className="text-[10px] tracking-widest text-white/45 mb-4 font-sans uppercase">
-          ⏱️ Таймер (минуты)
-        </p>
-        <div className="flex gap-2 flex-wrap">
-          {[3, 5, 7, 8, 10, 12].map((m) => {
-            const selected = settings.timerMinutes === m;
-            return (
-              <motion.button
-                key={m}
-                whileTap={{ scale: 0.92 }}
-                onClick={() => {
-                  vibrate(20);
-                  setSettings((prev) => ({ ...prev, timerMinutes: m }));
-                }}
-                className={`
-                  flex-1 min-w-[3rem] h-11 rounded-full font-sans font-bold text-sm
-                  border transition-all duration-200 select-none
-                  ${selected ? "text-white" : "bg-white/[0.04] border-white/[0.07] text-white/40"}
-                `}
-                style={
-                  selected
-                    ? {
-                        background: "rgba(255,82,94,0.12)",
-                        borderColor: "#FF525E",
-                        boxShadow: "inset 0 0 16px rgba(255,82,94,0.12), 0 0 0 1px rgba(255,82,94,0.35)",
-                      }
-                    : {}
-                }
-              >
-                {m}м
-              </motion.button>
-            );
-          })}
-        </div>
-      </GlassCard>
-
-      {/* Game Mode */}
-      <GlassCard className="p-5">
-        <p className="text-[10px] tracking-widest text-white/45 mb-4 font-sans uppercase">
-          🎭 Режим игры
-        </p>
-        <div className="flex flex-col gap-2">
-          <motion.button
-            whileTap={{ scale: 0.98 }}
-            onClick={() => {
-              vibrate(20);
-              setSettings((prev) => ({ ...prev, gameMode: "classic" }));
-            }}
-            className="rounded-[14px] border p-3 text-left transition-all duration-200"
-            style={
-              settings.gameMode === "classic"
-                ? { borderColor: "rgba(255,82,94,0.45)", background: "rgba(255,82,94,0.09)" }
-                : { borderColor: "rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }
-            }
-          >
-            <div className="text-sm font-sans font-bold text-white leading-tight">
-              Классический Шпион
-            </div>
-            <div className="text-[10px] text-white/40 mt-1.5 font-sans leading-relaxed">
-              Шпион видит роль и не знает слово
-            </div>
-          </motion.button>
-
-          <motion.button
-            whileTap={{ scale: 0.98 }}
-            onClick={() => {
-              vibrate(20);
-              setSettings((prev) => ({ ...prev, gameMode: "different-word" }));
-            }}
-            className="rounded-[14px] border p-3 text-left transition-all duration-200"
-            style={
-              settings.gameMode === "different-word"
-                ? { borderColor: "rgba(255,82,94,0.45)", background: "rgba(255,82,94,0.09)" }
-                : { borderColor: "rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }
-            }
-          >
-            <div className="text-sm font-sans font-bold text-white leading-tight">
-              Другое Слово
-            </div>
-            <div className="text-[10px] text-white/40 mt-1.5 font-sans leading-relaxed">
-              Шпион получает другое слово и выглядит как все
-            </div>
-          </motion.button>
-        </div>
-
-      </GlassCard>
-
-      {/* Categories Preview */}
-      <GlassCard className="p-5">
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-[10px] tracking-widest text-white/45 font-sans uppercase">
-            🗂️ Категории ({settings.selectedCategories.length})
-          </p>
-          <PillButton variant="outline" size="sm" onClick={() => setPhase("categories")}>
-            Редактировать
-          </PillButton>
-        </div>
-        {settings.selectedCategories.length === 0 ? (
-          <span className="text-xs text-red-400/70 font-sans">
-            ⚠️ Выберите хотя бы одну категорию
-          </span>
-        ) : (
-          <div className="grid grid-cols-2 gap-2">
-            {[...CATEGORIES, ...EXTRA_CATEGORIES].filter((c) => settings.selectedCategories.includes(c.id)).map((c) => (
-              <div
-                key={c.id}
-                className="flex items-center gap-2.5 p-3 rounded-[14px] backdrop-blur-[10px]"
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                }}
-              >
-                <span className="text-lg leading-none">{c.emoji}</span>
-                <span
-                  className="text-xs font-sans font-medium leading-tight"
-                  style={{ color: "rgba(255,230,220,0.80)" }}
-                >
-                  {c.name}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </GlassCard>
-
-      {/* Action Buttons */}
-      <div className="flex flex-col gap-3 pb-8">
-        <PillButton
-          variant="primary"
-          size="xl"
-          onClick={startGame}
-          disabled={settings.selectedCategories.length === 0}
-          className="w-full"
-        >
-          ▶ Начать игру
-        </PillButton>
-
-        <div className="flex gap-3">
-          <PillButton
-            variant="ghost"
-            size="md"
-            onClick={() => setPhase("settings")}
-            className="flex-1"
-          >
-            ⚙ Настройки
-          </PillButton>
-          <PillButton
-            variant="ghost"
-            size="md"
-            onClick={() => setPhase("categories")}
-            className="flex-1"
-          >
-            🗂 Категории
-          </PillButton>
-        </div>
-      </div>
-    </motion.div>
+    <SetupScreen
+      playersCount={settings.playersCount}
+      spyCount={settings.spyCount}
+      timerMinutes={settings.timerMinutes}
+      gameMode={settings.gameMode}
+      selectedCategoryIds={settings.selectedCategories}
+      categories={[...CATEGORIES, ...EXTRA_CATEGORIES]}
+      onPlayersChange={(count) => {
+        vibrate(20);
+        setSettings((prev) => {
+          const playersCount = Math.max(3, Math.min(12, count));
+          return {
+            ...prev,
+            playersCount,
+            spyCount: clampSpyCount(prev.spyCount, playersCount),
+          };
+        });
+      }}
+      onSpyCountChange={(count) => {
+        vibrate(20);
+        setSettings((prev) => ({
+          ...prev,
+          spyCount: clampSpyCount(count, prev.playersCount),
+        }));
+      }}
+      onTimerChange={(minutes) => {
+        vibrate(20);
+        setSettings((prev) => ({ ...prev, timerMinutes: minutes }));
+      }}
+      onModeChange={(gameMode) => {
+        vibrate(20);
+        setSettings((prev) => ({ ...prev, gameMode }));
+      }}
+      onOpenCategories={() => setPhase("categories")}
+      onOpenSettings={() => setPhase("settings")}
+      onStart={startGame}
+    />
   );
 
   // ─────────────────────────────────────────────────────────────────────────
