@@ -870,6 +870,7 @@ export default function GameComponent(): JSX.Element {
 
   const renderSetup = (): JSX.Element => (
     <SetupScreen
+      key="setup"
       playersCount={settings.playersCount}
       spyCount={settings.spyCount}
       timerMinutes={settings.timerMinutes}
@@ -1583,19 +1584,19 @@ export default function GameComponent(): JSX.Element {
           animate={{ x: [0, 40, -20, 0], y: [0, -30, 50, 0], scale: [1, 1.1, 0.9, 1] }}
           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
           className="absolute top-[-15%] left-[-10%] w-[65vw] h-[65vw] rounded-full"
-          style={{ background: "radial-gradient(circle, #3730A3 0%, transparent 70%)", filter: "blur(70px)", opacity: 0.13 }}
+          style={{ background: "radial-gradient(circle, #7F1D2D 0%, transparent 70%)", filter: "blur(70px)", opacity: 0.13 }}
         />
         <motion.div
           animate={{ x: [0, -50, 30, 0], y: [0, 40, -20, 0], scale: [1, 1.2, 1, 1] }}
           transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
           className="absolute bottom-[-10%] right-[-15%] w-[55vw] h-[55vw] rounded-full"
-          style={{ background: "radial-gradient(circle, #5B21B6 0%, transparent 70%)", filter: "blur(80px)", opacity: 0.10 }}
+          style={{ background: "radial-gradient(circle, #9F1239 0%, transparent 70%)", filter: "blur(80px)", opacity: 0.10 }}
         />
         <motion.div
           animate={{ x: [0, 20, -40, 0], y: [0, 30, 20, 0], opacity: [0.18, 0.12, 0.18] }}
           transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
           className="absolute top-[45%] right-[5%] w-[35vw] h-[35vw] rounded-full"
-          style={{ background: "radial-gradient(circle, #1E1B4B 0%, transparent 70%)", filter: "blur(50px)", opacity: 0.18 }}
+          style={{ background: "radial-gradient(circle, #3F1119 0%, transparent 70%)", filter: "blur(50px)", opacity: 0.18 }}
         />
       </div>
 
