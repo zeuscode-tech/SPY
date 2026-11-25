@@ -136,18 +136,39 @@ async function main() {
         `Could not see ${JSON.stringify(text)} in SPY WebView; body preview: ${JSON.stringify(preview)}`,
       );
     };
+    const waitForValue = async (expression, description, timeout = 10000) => {
+      for (let i = 0; i < timeout / 250; i++) {
+        try {
+          if (await evaluate(expression)) return true;
+        } catch { /* navigation can briefly replace the execution context */ }
+        await sleep(250);
+      }
+      throw Error(description);
+    };
     const button = async (needle, by = "text") => evaluate(`(() => {
       const buttons = Array.from(document.querySelectorAll("button"));
-      const found = buttons.find((b) => {
+      const candidates = buttons.map((b) => {
         const value = ${by === "aria" ? 'b.getAttribute("aria-label") || ""' : '(b.innerText || b.textContent || "").trim()'};
-        return value.toLocaleLowerCase("ru").includes(${JSON.stringify(normalizeUiText(needle))});
+        return { button: b, value: value.toLocaleLowerCase("ru").replace(/\\s+/g, " ").trim() };
       });
+      const needle = ${JSON.stringify(normalizeUiText(needle))};
+      const match = candidates.find((item) => item.value === needle || item.value.startsWith(needle + " "))
+        || candidates.find((item) => item.value.includes(needle));
+      const found = match?.button;
       if (!found || found.disabled) return false;
       found.click(); return true;
     })()`);
-    const click = async (needle, by = "text") => {
-      assert.equal(await button(needle, by), true, `Button absent/disabled: ${needle}`);
-      await sleep(500);
+    const click = async (needle, by = "text", timeout = 10000) => {
+      for (let i = 0; i < timeout / 250; i++) {
+        try {
+          if (await button(needle, by)) {
+            await sleep(500);
+            return;
+          }
+        } catch { /* screen transition can briefly replace the execution context */ }
+        await sleep(250);
+      }
+      throw Error(`Button absent/disabled: ${needle}`);
     };
 
     await waitFor("Найди");
@@ -163,27 +184,28 @@ async function main() {
     const cleared = await evaluate('document.body.innerText.includes("0/23")');
     assert.ok(cleared, "All 23 categories should be cleared");
     await click("Готово");
-    const startDisabled = await evaluate(`(() => {
+    await waitFor("Начать игру");
+    await waitForValue(`(() => {
       const b = Array.from(document.querySelectorAll("button"))
-        .find((x) => x.innerText.toLocaleLowerCase("ru").includes("начать игру"));
+        .find((x) => x.innerText.toLocaleLowerCase("ru").trim().startsWith("начать игру"));
       return Boolean(b?.disabled);
-    })()`);
-    assert.ok(startDisabled, "Start must be disabled with no selected categories");
+    })()`, "Start must be disabled with no selected categories");
     result("Empty selection blocks starting a game", true);
 
     await cdp.send("Page.reload", { ignoreCache: true });
+    await sleep(1000);
     await waitFor("Найди");
-    const stillEmpty = await evaluate(`(() => {
+    await waitForValue(`(() => {
       const b = Array.from(document.querySelectorAll("button"))
-        .find((x) => x.innerText.toLocaleLowerCase("ru").includes("начать игру"));
+        .find((x) => x.innerText.toLocaleLowerCase("ru").trim().startsWith("начать игру"));
       return Boolean(b?.disabled);
-    })()`);
-    assert.ok(stillEmpty, "Empty selection lost on WebView reload");
+    })()`, "Empty selection lost on WebView reload");
     result("Empty category selection persists on reload", true);
 
     await click("Изменить");
     await click("Все +");
     await click("Готово");
+    await waitFor("Начать игру");
     await click("Начать игру");
     await waitFor("Секретная карта");
     screenshot("03-role-hidden");
