@@ -9,6 +9,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { motion, AnimatePresence, type PanInfo } from "framer-motion";
+import { App } from "@capacitor/app";
 import {
   CATEGORIES,
   getAllLocations,
@@ -29,19 +30,14 @@ import PlayingScreen from "./PlayingScreen";
 import ResultsScreen from "./ResultsScreen";
 import SettingsScreen from "./SettingsScreen";
 import { restoreSelectedCategories } from "../data/categorySelection";
+import {
+  getAndroidBackAction,
+  type GamePhase,
+} from "../data/backNavigation";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
-
-type GamePhase =
-  | "setup"
-  | "categories"
-  | "reveal"
-  | "starter"
-  | "playing"
-  | "settings"
-  | "results";
 
 type GameMode = "classic" | "different-word";
 
@@ -355,9 +351,51 @@ export default function GameComponent(): JSX.Element {
   const starterTimerRef = useRef<number | null>(null);
 
   const fingerTouchesRef = useRef<FingerTouch[]>([]);
+  const phaseRef = useRef<GamePhase>(phase);
+  const roleVisibleRef = useRef<boolean>(isRoleVisible);
   useEffect(() => {
     fingerTouchesRef.current = fingerTouches;
   }, [fingerTouches]);
+
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
+
+  useEffect(() => {
+    roleVisibleRef.current = isRoleVisible;
+  }, [isRoleVisible]);
+
+  useEffect(() => {
+    let disposed = false;
+    let removeListener: (() => Promise<void>) | undefined;
+
+    void App.addListener("backButton", () => {
+      const action = getAndroidBackAction(phaseRef.current, roleVisibleRef.current);
+      if (action === "exit") {
+        void App.exitApp();
+        return;
+      }
+      if (action === "hide-role") {
+        setIsRoleVisible(false);
+        return;
+      }
+
+      setIsRoleVisible(false);
+      setIsTimerRunning(false);
+      setPhase("setup");
+    }).then((handle) => {
+      if (disposed) {
+        void handle.remove();
+      } else {
+        removeListener = () => handle.remove();
+      }
+    });
+
+    return () => {
+      disposed = true;
+      void removeListener?.();
+    };
+  }, []);
 
   // ── Persist settings ────────────────────────────────────────────────────
   useEffect(() => {
