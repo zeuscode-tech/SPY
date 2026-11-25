@@ -70,6 +70,9 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: |
             adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+            # The Pixel launcher can ANR during first boot on a busy hosted runner
+            # and cover SPY with a system dialog. It is not needed for this smoke.
+            adb shell am force-stop com.google.android.apps.nexuslauncher || true
             adb shell am start -W -n com.quantumLimited.SPY/.MainActivity
             sleep 8
             node scripts/smoke-android-webview.mjs

@@ -40,10 +40,24 @@ function note(name, detail) {
 async function cdpConnection() {
   const pid = adb("shell", "pidof", PACKAGE).split(/\s+/)[0];
   assert.match(pid, /^\d+$/, "SPY process is not running");
-  const unixSockets = adb("shell", "cat", "/proc/net/unix");
-  const sockets = [...unixSockets.matchAll(/@?(webview_devtools_remote_\d+)/g)].map((m) => m[1]);
-  const socket = sockets.find((s) => s.endsWith(`_${pid}`)) || sockets[0];
-  if (!socket) throw Error("WebView debugging socket missing in debug APK");
+  const expectedSocket = `webview_devtools_remote_${pid}`;
+  let socket;
+  let sockets = [];
+  for (let i = 0; i < 40; i++) {
+    const unixSockets = adb("shell", "cat", "/proc/net/unix");
+    sockets = [...unixSockets.matchAll(/@?(webview_devtools_remote_\d+)/g)]
+      .map((match) => match[1]);
+    socket = sockets.find((candidate) => candidate === expectedSocket);
+    if (socket) break;
+    await sleep(500);
+  }
+  if (!socket) {
+    throw Error(
+      `SPY WebView debugging socket ${expectedSocket} missing; found: ${sockets.join(", ") || "none"}`,
+    );
+  }
+  console.log(`Using SPY WebView socket ${socket} for pid ${pid}`);
+  try { adb("forward", "--remove", "tcp:9222"); } catch { /* no stale forward */ }
   adb("forward", "tcp:9222", `localabstract:${socket}`);
 
   let targets = [];
@@ -57,6 +71,7 @@ async function cdpConnection() {
   }
   const page = targets.find((item) => item.webSocketDebuggerUrl && item.type === "page");
   if (!page) throw Error("No WebView DevTools page target");
+  console.log(`Using WebView page ${page.title || "(untitled)"} at ${page.url || "(no URL)"}`);
   const url = page.webSocketDebuggerUrl.replace("localhost:9222", "127.0.0.1:9222");
   const socketWs = new WebSocket(url);
   await new Promise((resolve, reject) => {
@@ -115,7 +130,10 @@ async function main() {
         if (body?.includes(text)) return true;
         await sleep(250);
       }
-      throw Error(`Could not see ${JSON.stringify(text)} in WebView`);
+      const preview = String(await bodyText() || "").replace(/\s+/g, " ").slice(0, 500);
+      throw Error(
+        `Could not see ${JSON.stringify(text)} in SPY WebView; body preview: ${JSON.stringify(preview)}`,
+      );
     };
     const button = async (needle, by = "text") => evaluate(`(() => {
       const buttons = Array.from(document.querySelectorAll("button"));
