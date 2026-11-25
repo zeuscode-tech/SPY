@@ -24,6 +24,7 @@ import moviesWords from "../data/moviesWords.json";
 import SetupScreen from "./SetupScreen";
 import CategoryScreen from "./CategoryScreen";
 import RoleRevealScreen from "./RoleRevealScreen";
+import { restoreSelectedCategories } from "../data/categorySelection";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -446,16 +447,16 @@ export default function GameComponent(): JSX.Element {
       typeof loaded.playersCount === "number"
         ? Math.min(12, Math.max(3, loaded.playersCount))
         : 5;
-    const loadedCategories =
-      loaded.selectedCategories && loaded.selectedCategories.length > 0
-        ? loaded.selectedCategories
-        : (DEFAULT_CATEGORY_IDS.slice(0, 4) as SelectableCategoryId[]);
     const availableCategoryIds = new Set<SelectableCategoryId>([
       ...DEFAULT_CATEGORY_IDS,
       "anime",
       "movies",
     ]);
-    const selectedCategories = loadedCategories.filter((id) => availableCategoryIds.has(id));
+    const selectedCategories = restoreSelectedCategories<SelectableCategoryId>(
+      loaded.selectedCategories,
+      DEFAULT_CATEGORY_IDS.slice(0, 4),
+      availableCategoryIds,
+    );
     return {
       playersCount,
       spyCount: clampSpyCount(
@@ -473,10 +474,7 @@ export default function GameComponent(): JSX.Element {
         typeof loaded.timerMinutes === "number"
           ? Math.min(12, Math.max(3, loaded.timerMinutes))
           : 8,
-      selectedCategories:
-        selectedCategories.length > 0
-          ? selectedCategories
-          : (DEFAULT_CATEGORY_IDS.slice(0, 4) as SelectableCategoryId[]),
+      selectedCategories,
       playerNames: Array.isArray(loaded.playerNames) ? loaded.playerNames : [],
     };
   });
