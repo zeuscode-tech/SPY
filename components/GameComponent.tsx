@@ -24,6 +24,9 @@ import moviesWords from "../data/moviesWords.json";
 import SetupScreen from "./SetupScreen";
 import CategoryScreen from "./CategoryScreen";
 import RoleRevealScreen from "./RoleRevealScreen";
+import StarterScreen from "./StarterScreen";
+import PlayingScreen from "./PlayingScreen";
+import ResultsScreen from "./ResultsScreen";
 import { restoreSelectedCategories } from "../data/categorySelection";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1000,242 +1003,51 @@ export default function GameComponent(): JSX.Element {
   // ─────────────────────────────────────────────────────────────────────────
 
   const renderStarterPicker = (): JSX.Element => (
-    <motion.div
+    <StarterScreen
       key="starter"
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="flex flex-col min-h-screen p-6 gap-5 overflow-hidden"
-    >
-      <div className="pt-8 text-center space-y-2">
-        <h2
-          className="text-3xl font-cyber font-black tracking-widest"
-          style={{
-            background: "linear-gradient(135deg, #E83449, #FF7A59)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }}
-        >
-          Кто начинает?
-        </h2>
-        <p className="text-xs text-white/40 font-sans leading-relaxed max-w-xs mx-auto">
-          Все кладут пальцы на экран. Максимум точек: {settings.playersCount}.
-        </p>
-      </div>
-
-      <div
-        onPointerDown={upsertFingerTouch}
-        onPointerMove={moveFingerTouch}
-        onPointerUp={removeFingerTouch}
-        onPointerCancel={removeFingerTouch}
-        className="relative flex-1 min-h-[24rem] rounded-[28px] border border-white/[0.08] overflow-hidden touch-none select-none"
-        style={{
-          background:
-            "radial-gradient(circle at 50% 45%, rgba(16,185,129,0.12), transparent 38%), linear-gradient(145deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02))",
-          boxShadow: "inset 0 0 80px rgba(0,0,0,0.35), 0 20px 60px rgba(0,0,0,0.35)",
-        }}
-      >
-        <div className="absolute inset-0 opacity-[0.08]" style={{
-          backgroundImage: "linear-gradient(rgba(255,255,255,0.25) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.25) 1px, transparent 1px)",
-          backgroundSize: "34px 34px",
-        }} />
-
-        {fingerTouches.length === 0 && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/30 font-sans">
-            <div className="w-24 h-24 rounded-full border border-white/10 flex items-center justify-center text-4xl">
-              ☝
-            </div>
-            <span className="text-xs tracking-[0.24em] uppercase">Коснитесь экрана</span>
-          </div>
-        )}
-
-        {fingerTouches.length >= settings.playersCount && starterIndex === null && !isPickingStarter && (
-          <div className="absolute left-4 right-4 top-4 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-4 py-2 text-center text-[10px] tracking-[0.2em] uppercase text-emerald-200 font-sans">
-            Все игроки на поле
-          </div>
-        )}
-
-        {starterCountdown !== null && (
-          <motion.div
-            key={starterCountdown}
-            initial={{ scale: 0.7, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 1.2, opacity: 0 }}
-            className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
-          >
-            <div className="w-32 h-32 rounded-full border border-white/20 bg-black/45 backdrop-blur-[10px] flex items-center justify-center">
-              <span className="text-6xl font-cyber font-black text-white" style={{ textShadow: "0 0 28px rgba(16,185,129,0.85)" }}>
-                {starterCountdown}
-              </span>
-            </div>
-          </motion.div>
-        )}
-
-        {fingerTouches.map((touch, index) => {
-          const winner = starterIndex === index;
-          return (
-            <motion.div
-              key={touch.id}
-              className="absolute -translate-x-1/2 -translate-y-1/2"
-              animate={{
-                left: touch.x,
-                top: touch.y,
-                scale: winner ? 1.38 : isPickingStarter ? 1.04 : 1,
-              }}
-              transition={{ type: "spring", stiffness: 420, damping: 28 }}
-            >
-              <div
-                className="w-24 h-24 rounded-full flex items-center justify-center border"
-                style={{
-                  borderColor: winner ? "#FFFFFF" : "rgba(255,255,255,0.42)",
-                  background: winner
-                    ? "radial-gradient(circle, #FF3B30 0%, rgba(255,59,48,0.82) 42%, rgba(80,0,0,0.7) 74%)"
-                    : "radial-gradient(circle, #34D399 0%, rgba(16,185,129,0.82) 42%, rgba(0,54,36,0.7) 74%)",
-                  boxShadow: winner
-                    ? "0 0 45px rgba(255,59,48,0.95), 0 0 115px rgba(255,59,48,0.55)"
-                    : "0 0 30px rgba(16,185,129,0.75), 0 0 80px rgba(16,185,129,0.34)",
-                }}
-              >
-                <span className="text-2xl font-cyber font-black text-white">
-                  {winner ? "!" : ""}
-                </span>
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
-
-      <div className="space-y-3 pb-6">
-        {starterIndex !== null ? (
-          <GlassCard className="p-4" glow>
-            <p className="text-[10px] tracking-widest text-white/35 font-sans uppercase mb-2">
-              Первый ход
-            </p>
-            <p className="text-lg font-sans font-bold text-white">
-              Начинает игрок под светящейся точкой
-            </p>
-          </GlassCard>
-        ) : (
-          <p className="text-xs text-white/35 text-center font-sans">
-            Точек: {fingerTouches.length}/{settings.playersCount}. После запуска идет отсчет 5 секунд.
-          </p>
-        )}
-
-        <div className="grid grid-cols-2 gap-3">
-          <PillButton
-            variant="primary"
-            size="lg"
-            onClick={pickStarter}
-            disabled={fingerTouches.length < 2 || isPickingStarter || starterIndex !== null}
-            className="flex-1"
-          >
-            {isPickingStarter ? "Отсчет..." : "Запустить"}
-          </PillButton>
-          <PillButton
-            variant="ghost"
-            size="lg"
-            onClick={starterIndex === null ? clearStarterPicker : startPlaying}
-            disabled={isPickingStarter}
-            className="flex-1"
-          >
-            {starterIndex === null ? "Сброс" : "Начать игру"}
-          </PillButton>
-        </div>
-        <PillButton
-          variant="outline"
-          size="md"
-          onClick={startPlaying}
-          disabled={isPickingStarter}
-          className="w-full"
-        >
-          Пропустить выбор
-        </PillButton>
-      </div>
-    </motion.div>
+      playersCount={settings.playersCount}
+      touches={fingerTouches}
+      isPicking={isPickingStarter}
+      countdown={starterCountdown}
+      winnerIndex={starterIndex}
+      onPointerDown={upsertFingerTouch}
+      onPointerMove={moveFingerTouch}
+      onPointerUp={removeFingerTouch}
+      onPick={pickStarter}
+      onReset={clearStarterPicker}
+      onStart={startPlaying}
+    />
   );
 
-  // RENDER: Playing Screen
-  // ─────────────────────────────────────────────────────────────────────────
-
-  const renderPlaying = (): JSX.Element => {
-    const progress = timerSeconds / (settings.timerMinutes * 60);
-    const circumference = 2 * Math.PI * 90;
-    const strokeDash = circumference * progress;
-    const isUrgent = timerSeconds <= 30;
-    const isEnded = timerSeconds === 0;
-    const timerColor = isUrgent ? "#FF3B30" : "#FF525E";
-
-    return (
-      <motion.div
-        key="playing"
-        variants={pageVariants}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-        className="flex flex-col min-h-screen p-6 gap-5 overflow-y-auto"
-      >
-        <div className="flex items-center justify-between pt-6">
-          <h2 className="text-xl font-cyber font-bold tracking-widest" style={{ background: isUrgent ? "linear-gradient(135deg, #FF3B30, #FF6B6B)" : "linear-gradient(135deg, #E83449, #FF7A59)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-            {isEnded ? "⚠ ВРЕМЯ ВЫШЛО" : "▶ ИГРА ИДЁТ"}
-          </h2>
-          <PillButton variant="ghost" size="sm" onClick={() => { vibrate([20, 20]); setIsTimerRunning(false); setPhase("setup"); }}>✕ Выйти</PillButton>
-        </div>
-
-        <div className="flex justify-center py-4">
-          <div className="relative w-52 h-52">
-            <svg width="208" height="208" viewBox="0 0 208 208" className="-rotate-90">
-              <circle cx="104" cy="104" r="90" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
-              <circle cx="104" cy="104" r="90" fill="none" stroke={isEnded ? "#333" : timerColor} strokeWidth="6" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={circumference - strokeDash} style={{ transition: "stroke-dashoffset 1s linear, stroke 0.5s", filter: `drop-shadow(0 0 8px ${timerColor})` }} />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <motion.span animate={isUrgent && isTimerRunning ? { scale: [1, 1.05, 1], color: ["#FF3B30", "#FF6B6B", "#FF3B30"] } : {}} transition={{ duration: 1, repeat: Infinity }} className="text-5xl font-cyber font-black" style={{ color: timerColor, textShadow: `0 0 20px ${timerColor}99` }}>
-                {formatTime(timerSeconds)}
-              </motion.span>
-              <span className="text-xs text-white/30 font-sans mt-1 tracking-widest uppercase">{isEnded ? "Голосуйте" : isTimerRunning ? "Идёт" : "Пауза"}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex gap-3">
-          <PillButton variant={isTimerRunning ? "danger" : "success"} size="md" onClick={toggleTimer} className="flex-1">{isTimerRunning ? "⏸ Пауза" : "▶ Продолжить"}</PillButton>
-          <PillButton variant="ghost" size="md" onClick={resetTimer}>↺ Сброс</PillButton>
-        </div>
-
-        <CoralDivider />
-
-        <GlassCard className="p-4" glow={showLocationList}>
-          <button className="w-full flex items-center justify-between" onClick={() => { vibrate(20); setShowLocationList((prev) => !prev); }}>
-            <span className="font-sans text-sm text-[#FF525E]/80 tracking-widest uppercase">🗺️ Возможные места ({allGameLocations.length})</span>
-            <motion.span animate={{ rotate: showLocationList ? 180 : 0 }} className="text-[#FF525E]/60 text-lg">▾</motion.span>
-          </button>
-          <AnimatePresence>
-            {showLocationList && (
-              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                <div className="pt-4 grid grid-cols-2 gap-2">
-                  {allGameLocations.map((loc) => (
-                    <div key={loc.raw} className="text-xs px-2.5 py-2 rounded-[10px] font-sans border border-white/[0.05] bg-white/[0.02]">
-                      <div style={{ color: "#FF525E", opacity: 0.8 }}>{loc.word}</div>
-                      <div className="text-[10px] leading-relaxed text-white/40 mt-1">({loc.description})</div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </GlassCard>
-
-        <GlassCard className="p-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-sans text-white/60">🕵️ Кол-во шпионов</span>
-            <span className="text-2xl font-cyber font-black" style={{ color: "#FF3B30", textShadow: "0 0 10px rgba(255,59,48,0.5)" }}>{spyIndices.size}</span>
-          </div>
-          <p className="text-xs text-white/25 font-sans mt-1">{settings.playersCount} игроков · {settings.timerMinutes} мин</p>
-        </GlassCard>
-      </motion.div>
-    );
-  };
+  // ── Discussion timer and possible-word list ─────────────────────────────
+  const renderPlaying = (): JSX.Element => (
+    <PlayingScreen
+      key="playing"
+      timerSeconds={timerSeconds}
+      timerMinutes={settings.timerMinutes}
+      isTimerRunning={isTimerRunning}
+      playersCount={settings.playersCount}
+      spiesCount={spyIndices.size}
+      words={allGameLocations}
+      wordsExpanded={showLocationList}
+      onToggleWords={() => {
+        vibrate(20);
+        setShowLocationList((prev) => !prev);
+      }}
+      onToggleTimer={toggleTimer}
+      onResetTimer={resetTimer}
+      onFinishRound={() => {
+        vibrate(30);
+        setIsTimerRunning(false);
+        setPhase("results");
+      }}
+      onExit={() => {
+        vibrate(30);
+        setIsTimerRunning(false);
+        setPhase("setup");
+      }}
+    />
+  );
 
   // ─────────────────────────────────────────────────────────────────────────
   // RENDER: Settings
@@ -1326,44 +1138,18 @@ export default function GameComponent(): JSX.Element {
   // RENDER: Results Screen
   // ─────────────────────────────────────────────────────────────────────────
 
-  const renderResults = (): JSX.Element => {
-    const spies = Array.from(spyIndices).map((idx) => getPlayerName(idx));
-    return (
-      <motion.div
-        key="results"
-        variants={pageVariants}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-        className="flex flex-col items-center justify-center min-h-screen p-8 gap-8 text-center"
-      >
-        <div className="space-y-2">
-          <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-7xl mb-4">🏁</motion.div>
-          <h2 className="text-4xl font-cyber font-black tracking-widest text-[#FF525E]">ИГРА ОКОНЧЕНА</h2>
-          <p className="text-white/40 font-sans uppercase tracking-[0.2em] text-xs">Время вышло или шпион раскрыт</p>
-        </div>
-        <GlassCard className="w-full p-6 space-y-6">
-          <div>
-            <p className="text-[10px] text-white/30 uppercase tracking-widest mb-3">Локация была</p>
-            <p className="text-2xl font-cyber font-bold text-white tracking-tight">{currentLocation}</p>
-          </div>
-          <CoralDivider />
-          <div>
-            <p className="text-[10px] text-white/30 uppercase tracking-widest mb-3">{spies.length === 1 ? "Шпион" : "Шпионы"}</p>
-            <div className="flex flex-wrap justify-center gap-3">
-              {spies.map((name, i) => (
-                <span key={i} className="px-4 py-2 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 font-bold">{name}</span>
-              ))}
-            </div>
-          </div>
-        </GlassCard>
-        <div className="w-full space-y-3">
-          <PillButton variant="primary" size="xl" className="w-full" onClick={() => setPhase("setup")}>В меню</PillButton>
-          <PillButton variant="ghost" size="lg" className="w-full" onClick={startGame}>Играть снова ↺</PillButton>
-        </div>
-      </motion.div>
-    );
-  };
+  const renderResults = (): JSX.Element => (
+    <ResultsScreen
+      key="results"
+      location={currentLocation}
+      spyWord={spyWord}
+      differentWordMode={settings.gameMode === "different-word"}
+      spyNames={Array.from(spyIndices).map((idx) => getPlayerName(idx))}
+      playersCount={settings.playersCount}
+      onReplay={startGame}
+      onMenu={() => setPhase("setup")}
+    />
+  );
 
   // ─────────────────────────────────────────────────────────────────────────
   // Main Render
