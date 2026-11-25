@@ -27,6 +27,7 @@ import RoleRevealScreen from "./RoleRevealScreen";
 import StarterScreen from "./StarterScreen";
 import PlayingScreen from "./PlayingScreen";
 import ResultsScreen from "./ResultsScreen";
+import SettingsScreen from "./SettingsScreen";
 import { restoreSelectedCategories } from "../data/categorySelection";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1054,84 +1055,24 @@ export default function GameComponent(): JSX.Element {
   // ─────────────────────────────────────────────────────────────────────────
 
   const renderSettings = (): JSX.Element => (
-    <motion.div
+    <SettingsScreen
       key="settings"
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="flex flex-col min-h-screen p-6 gap-5 overflow-y-auto"
-    >
-      <div className="flex items-center gap-4 pt-6">
-        <button onClick={() => { vibrate(20); setPhase("setup"); }} className="text-[#FF525E]/70 text-2xl">←</button>
-        <h2 className="text-xl font-cyber font-bold tracking-widest" style={{ background: "linear-gradient(135deg, #E83449, #FF7A59)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Настройки</h2>
-      </div>
-
-      <GlassCard className="p-5">
-        <p className="text-[10px] tracking-widest text-white/45 mb-4 font-sans uppercase">👤 Имена игроков</p>
-        <div className="flex flex-col gap-3 max-h-80 overflow-y-auto pr-1">
-          {Array.from({ length: settings.playersCount }).map((_, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <span className="text-[10px] font-cyber text-white/30 w-4">{i + 1}</span>
-              <input
-                type="text"
-                value={settings.playerNames[i] ?? ""}
-                onChange={(e) => {
-                  const newNames = [...settings.playerNames];
-                  newNames[i] = e.target.value;
-                  setSettings((prev) => ({ ...prev, playerNames: newNames }));
-                }}
-                placeholder={`Игрок ${i + 1}`}
-                className="flex-1 bg-white/[0.04] border border-white/[0.07] rounded-[10px] px-3 py-2 text-sm font-sans text-white placeholder-white/20 focus:outline-none focus:border-[#FF525E]/40 transition-all"
-                maxLength={15}
-              />
-            </div>
-          ))}
-        </div>
-      </GlassCard>
-
-      <GlassCard className="p-5">
-        <p className="text-[10px] tracking-widest text-white/45 mb-4 font-sans uppercase">➕ Свои слова</p>
-        <div className="flex gap-2 mb-4">
-          <input
-            type="text"
-            value={customInput}
-            onChange={(e) => setCustomInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") addCustomLocation(); }}
-            placeholder="напр. Кофейня на углу"
-            className="flex-1 bg-white/[0.05] border border-white/[0.09] rounded-[12px] px-4 py-3 text-sm font-sans text-white placeholder-white/25 focus:outline-none transition-all duration-200"
-            maxLength={50}
-          />
-          <PillButton variant="primary" size="sm" onClick={addCustomLocation}>Добавить</PillButton>
-        </div>
-        <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
-          {customLocations.length === 0 ? (
-            <p className="text-xs text-white/20 font-sans text-center py-4">Своих слов пока нет</p>
-          ) : (
-            customLocations.map((loc, i) => (
-              <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="flex items-center justify-between p-3 rounded-[10px] bg-white/[0.03] border border-white/[0.05]">
-                <span className="text-sm font-sans text-white/70">{loc}</span>
-                <button onClick={() => removeCustomLocation(i)} className="text-red-400/60 hover:text-red-400 text-lg ml-2 px-2">✕</button>
-              </motion.div>
-            ))
-          )}
-        </div>
-      </GlassCard>
-
-      <GlassCard className="p-5">
-        <p className="text-[10px] tracking-widest text-white/45 mb-3 font-sans uppercase">Privacy</p>
-        <div className="space-y-2 text-xs leading-relaxed text-white/45 font-sans">
-          <p>Spy Ultimate works offline and does not require an account.</p>
-          <p>Player names, custom words, settings, and recent word history are saved only on this device.</p>
-          <p>The app does not send gameplay data to a server and does not use ads or analytics SDKs.</p>
-          <p>Privacy policy: <a href="https://spy-privacy-quantum.netlify.app" target="_blank" rel="noopener noreferrer" className="text-secondary underline decoration-secondary/30">spy-privacy-quantum.netlify.app</a></p>
-        </div>
-      </GlassCard>
-
-      <div className="pb-8">
-        <PillButton variant="primary" size="lg" onClick={() => setPhase("setup")} className="w-full">← В главное меню</PillButton>
-      </div>
-    </motion.div>
+      playersCount={settings.playersCount}
+      playerNames={settings.playerNames}
+      customLocations={customLocations}
+      customInput={customInput}
+      onPlayerNameChange={(index, value) => {
+        setSettings((prev) => {
+          const playerNames = [...prev.playerNames];
+          playerNames[index] = value;
+          return { ...prev, playerNames };
+        });
+      }}
+      onCustomInputChange={setCustomInput}
+      onAddCustomLocation={addCustomLocation}
+      onRemoveCustomLocation={removeCustomLocation}
+      onBack={() => setPhase("setup")}
+    />
   );
 
   // ─────────────────────────────────────────────────────────────────────────
