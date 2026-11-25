@@ -22,6 +22,8 @@ import {
 import animeWords from "../data/animeWords.json";
 import moviesWords from "../data/moviesWords.json";
 import SetupScreen from "./SetupScreen";
+import CategoryScreen from "./CategoryScreen";
+import RoleRevealScreen from "./RoleRevealScreen";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -493,6 +495,7 @@ export default function GameComponent(): JSX.Element {
   const [spyWordHint, setSpyWordHint] = useState<string>("");
   const [currentPlayer, setCurrentPlayer] = useState<number>(0);
   const [isRoleVisible, setIsRoleVisible] = useState<boolean>(false);
+  const [hasViewedRole, setHasViewedRole] = useState<boolean>(false);
   const [isCardLeaving, setIsCardLeaving] = useState<boolean>(false);
   const [cardExit, setCardExit] = useState({ x: 360, y: -28, rotate: 12 });
   const [timerSeconds, setTimerSeconds] = useState<number>(0);
@@ -617,6 +620,8 @@ export default function GameComponent(): JSX.Element {
     setTimerSeconds(settings.timerMinutes * 60);
     setIsTimerRunning(false);
     setIsRoleVisible(false);
+    setHasViewedRole(false);
+    setPanOffset({ x: 0, y: 0 });
     setIsCardLeaving(false);
     setCardExit({ x: 360, y: -28, rotate: 12 });
     setTimerWarning(false);
@@ -634,7 +639,8 @@ export default function GameComponent(): JSX.Element {
   }, [settings, customLocations]);
 
   const handleRevealDone = useCallback((info?: PanInfo): void => {
-    if (isCardLeaving) return;
+    if (isCardLeaving || !hasViewedRole || isRoleVisible || cardSwipeHandledRef.current) return;
+    cardSwipeHandledRef.current = true;
     vibrate(30);
     const rawX = info?.offset.x ?? 360;
     const rawY = info?.offset.y ?? -28;
@@ -660,6 +666,7 @@ export default function GameComponent(): JSX.Element {
 
     window.setTimeout(() => {
       setIsCardLeaving(false);
+      setHasViewedRole(false);
       setCardExit({ x: 360, y: -28, rotate: 12 });
       cardSwipeHandledRef.current = false;
       
@@ -669,13 +676,16 @@ export default function GameComponent(): JSX.Element {
         setPhase("starter");
       }
     }, 300);
-  }, [currentPlayer, isCardLeaving, settings.playersCount]);
+  }, [currentPlayer, isCardLeaving, isRoleVisible, hasViewedRole, settings.playersCount]);
 
   const flipRoleCard = useCallback((): void => {
     if (isCardLeaving) return;
     if (cardSwipeHandledRef.current) return;
     vibrate([30, 20, 60]);
-    if (!isRoleVisible) playRevealSound();
+    if (!isRoleVisible) {
+      playRevealSound();
+      setHasViewedRole(true);
+    }
     setIsRoleVisible((prev) => !prev);
   }, [isCardLeaving, isRoleVisible]);
 
@@ -913,141 +923,67 @@ export default function GameComponent(): JSX.Element {
   // RENDER: Category Selector
   // ─────────────────────────────────────────────────────────────────────────
 
-  const renderCategories = (): JSX.Element => {
-    return (
-    <motion.div
+  const renderCategories = (): JSX.Element => (
+    <CategoryScreen
       key="categories"
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="flex flex-col min-h-screen p-6 gap-4 overflow-y-auto"
-    >
-      <div className="flex items-center gap-4 pt-6">
-        <button
-          onClick={() => { vibrate(20); setPhase("setup"); }}
-          className="text-[#FF525E]/70 text-2xl"
-        >
-          ←
-        </button>
-        <h2
-          className="text-xl font-cyber font-bold tracking-widest"
-          style={{
-            background: "linear-gradient(135deg, #E83449, #FF7A59)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }}
-        >
-          Категории
-        </h2>
-      </div>
-
-      <p className="text-xs text-white/40 font-sans">
-        Нажмите для выбора. Выбрано: {settings.selectedCategories.length}/{CATEGORIES.length + EXTRA_CATEGORIES.length}
-      </p>
-
-      <motion.div
-        variants={staggerContainer}
-        initial="initial"
-        animate="animate"
-        className="flex flex-col gap-3 pb-8"
-      >
-        {[...CATEGORIES, ...EXTRA_CATEGORIES].map((cat) => {
-          const selected = settings.selectedCategories.includes(cat.id);
-          return (
-            <motion.div key={cat.id} variants={staggerItem}>
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => toggleCategory(cat.id)}
-                className="w-full p-4 rounded-[18px] border text-left transition-all duration-300 backdrop-blur-[20px]"
-                style={{
-                  background: selected
-                    ? "linear-gradient(135deg, rgba(232,52,73,0.09) 0%, rgba(255,82,94,0.03) 100%)"
-                    : "rgba(255,255,255,0.02)",
-                  borderColor: selected
-                    ? "rgba(255,82,94,0.3)"
-                    : "rgba(255,255,255,0.06)",
-                  boxShadow: selected ? "0 0 20px rgba(232,52,73,0.06)" : "none",
-                }}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{cat.emoji}</span>
-                    <div>
-                      <p className={`font-sans font-bold text-sm ${selected ? "text-white" : "text-white/50"}`}>
-                        {cat.name}
-                      </p>
-                      <p className="text-xs text-white/25 font-sans">
-                        {cat.locations.length} слов
-                      </p>
-                    </div>
-                  </div>
-                  <div
-                    className="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200"
-                    style={{
-                      borderColor: selected ? "#FF525E" : "rgba(255,255,255,0.2)",
-                      background: selected ? "linear-gradient(135deg, #E83449, #FF7A59)" : "transparent",
-                    }}
-                  >
-                    {selected && <span className="text-white text-xs font-bold">✓</span>}
-                  </div>
-                </div>
-              </motion.button>
-            </motion.div>
-          );
-        })}
-      </motion.div>
-    </motion.div>
+      categories={[...CATEGORIES, ...EXTRA_CATEGORIES]}
+      selectedCategoryIds={settings.selectedCategories}
+      onToggle={toggleCategory}
+      onSelectAll={() => {
+        vibrate(20);
+        setSettings((prev) => ({
+          ...prev,
+          selectedCategories: [...CATEGORIES, ...EXTRA_CATEGORIES].map((category) => category.id),
+        }));
+      }}
+      onClear={() => {
+        vibrate(20);
+        setSettings((prev) => ({ ...prev, selectedCategories: [] }));
+      }}
+      onBack={() => setPhase("setup")}
+    />
   );
-  };
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // RENDER: Pass the Phone
-  // ─────────────────────────────────────────────────────────────────────────
-
-  // RENDER: Role Reveal
-  // ─────────────────────────────────────────────────────────────────────────
-
+  // ── Secret-card presentation / reveal ──────────────────────────────────
   const renderReveal = (): JSX.Element => {
     const spy = isSpy(currentPlayer);
     const disguisedSpyMode = settings.gameMode === "different-word";
     const visibleWord = spy && disguisedSpyMode ? spyWord : currentLocation;
     const visibleWordHint = spy && disguisedSpyMode ? spyWordHint : currentLocationHint;
-
     const otherSpyPlayers = Array.from(spyIndices)
       .filter((index) => index !== currentPlayer)
       .map((index) => getPlayerName(index))
       .sort();
-
     const otherSpiesNote =
       otherSpyPlayers.length === 0
         ? "Ты единственный шпион"
         : otherSpyPlayers.length === 1
-        ? `Еще шпион: ${otherSpyPlayers[0]}`
-        : `Еще шпионы: ${otherSpyPlayers.join(", ")}`;
-
-    const showExplicitSpyRole = spy && !disguisedSpyMode;
-    const doneVariant: PillButtonProps["variant"] = showExplicitSpyRole ? "danger" : "success";
-    const cardAccent = showExplicitSpyRole ? "#FF3B30" : "#FF525E";
-    const cardGlow = showExplicitSpyRole
-      ? "rgba(255,59,48,0.28)"
-      : "rgba(232,52,73,0.24)";
+          ? `Ещё шпион: ${otherSpyPlayers[0]}`
+          : `Ещё шпионы: ${otherSpyPlayers.join(", ")}`;
 
     return (
-      <motion.div
-        key="reveal"
-        variants={pageVariants}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-        className="flex flex-col items-center justify-center min-h-screen p-8 gap-7 text-center touch-none overflow-hidden"
-        onPan={(_, info) => {
-          if (isCardLeaving) return;
+      <RoleRevealScreen
+        key={`reveal-${currentPlayer}`}
+        playerName={getPlayerName(currentPlayer)}
+        playerIndex={currentPlayer}
+        playersCount={settings.playersCount}
+        isSpy={spy}
+        disguisedSpyMode={disguisedSpyMode}
+        word={visibleWord}
+        wordHint={visibleWordHint}
+        otherSpiesNote={otherSpiesNote}
+        isRoleVisible={isRoleVisible}
+        hasViewedRole={hasViewedRole}
+        isCardLeaving={isCardLeaving}
+        cardExit={cardExit}
+        panOffset={panOffset}
+        onFlip={flipRoleCard}
+        onPan={(info) => {
+          if (!hasViewedRole || isRoleVisible || isCardLeaving) return;
           setPanOffset({ x: info.offset.x, y: info.offset.y });
         }}
-        onPanEnd={(_, info) => {
-          if (isCardLeaving) return;
+        onPanEnd={(info) => {
+          if (!hasViewedRole || isRoleVisible || isCardLeaving) return;
           const distance = Math.hypot(info.offset.x, info.offset.y);
           const velocity = Math.hypot(info.velocity.x, info.velocity.y);
           if (distance > 85 || velocity > 600) {
@@ -1056,154 +992,12 @@ export default function GameComponent(): JSX.Element {
             setPanOffset({ x: 0, y: 0 });
           }
         }}
-      >
-        <div className="space-y-1">
-          <p className="text-xs tracking-[0.4em] text-white/30 font-sans uppercase">
-            {getPlayerName(currentPlayer)}
-          </p>
-          <h3 className="text-lg font-sans text-white/60">Карта роли</h3>
-        </div>
-
-        <motion.div className="relative w-[20rem] max-w-[calc(100vw-3rem)] h-[28rem]">
-          {currentPlayer + 1 < settings.playersCount && (
-            <>
-              <div
-                className="absolute inset-0 rounded-[30px] border border-white/[0.08]"
-                style={{
-                  transform: "translateY(18px) scale(0.94) rotate(-3deg)",
-                  background: "linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))",
-                  boxShadow: "0 18px 44px rgba(0,0,0,0.38)",
-                }}
-              />
-              <div
-                className="absolute inset-0 rounded-[30px] border border-white/[0.10]"
-                style={{
-                  transform: "translateY(9px) scale(0.97) rotate(2deg)",
-                  background: "linear-gradient(145deg, rgba(255,82,94,0.10), rgba(255,255,255,0.025))",
-                  boxShadow: "0 16px 42px rgba(0,0,0,0.42)",
-                }}
-              />
-            </>
-          )}
-
-          <AnimatePresence>
-            {isRoleVisible && (
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1.06, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                className="absolute inset-2 rounded-[32px] blur-2xl"
-                style={{ background: cardGlow }}
-              />
-            )}
-          </AnimatePresence>
-
-          <motion.button
-            key={`role-card-${currentPlayer}`}
-            type="button"
-            onClick={flipRoleCard}
-            onContextMenu={(e) => e.preventDefault()}
-            whileTap={{ scale: 0.98 }}
-            animate={isCardLeaving ? { ...cardExit, opacity: 0 } : { x: panOffset.x, y: panOffset.y, rotate: panOffset.x / 14, opacity: 1 }}
-            transition={isCardLeaving || (panOffset.x === 0 && panOffset.y === 0) 
-              ? { duration: 0.3, ease: "easeOut" } 
-              : { duration: 0 }}
-            className="relative w-full h-full select-none touch-manipulation"
-            style={{ perspective: "1200px", userSelect: "none", WebkitUserSelect: "none", touchAction: "none" }}
-          >
-            <motion.div
-              animate={{ rotateY: isRoleVisible ? 180 : 0 }}
-              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-              className="relative w-full h-full rounded-[30px] border flex flex-col items-center justify-center gap-4 overflow-hidden backdrop-blur-[20px]"
-              style={{
-                transformStyle: "preserve-3d",
-                borderColor: isRoleVisible ? cardAccent : "rgba(255,255,255,0.14)",
-                background: isRoleVisible
-                  ? showExplicitSpyRole
-                    ? "linear-gradient(145deg, rgba(255,59,48,0.18), rgba(20,8,10,0.94))"
-                    : "linear-gradient(145deg, rgba(232,52,73,0.18), rgba(10,10,14,0.94))"
-                  : "linear-gradient(145deg, rgba(255,255,255,0.11), rgba(255,255,255,0.03)), radial-gradient(circle at 50% 0%, rgba(255,82,94,0.18), transparent 55%)",
-                boxShadow: `0 24px 70px rgba(0,0,0,0.6), 0 0 ${isRoleVisible ? "42px" : "18px"} ${isRoleVisible ? cardGlow : "rgba(255,82,94,0.12)"}, inset 0 1px 0 rgba(255,255,255,0.12)`,
-              }}
-            >
-              {!isRoleVisible && (
-                <>
-                  <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 50% 20%, rgba(255,122,89,0.24), transparent 34%), radial-gradient(circle at 50% 82%, rgba(255,200,87,0.14), transparent 32%)" }} />
-                  <div className="absolute inset-[16px] rounded-[24px] border border-[#FF525E]/25" />
-                  <div className="absolute inset-[30px] rounded-[19px] border border-white/[0.08]" />
-                  <div className="absolute inset-[48px] rounded-[16px] border border-[#FFC857]/10" />
-                  <div className="absolute h-56 w-56 rounded-full border border-[#FF525E]/25" />
-                  <div className="absolute h-40 w-40 rounded-full border border-white/[0.08]" />
-                  <div className="absolute h-24 w-24 rotate-45 rounded-[18px] border border-[#FFC4B0]/35 bg-white/[0.03]" />
-                  <div className="absolute h-14 w-14 rotate-45 rounded-[12px]" style={{ background: "linear-gradient(135deg, rgba(255,82,94,0.42), rgba(255,200,87,0.18))", boxShadow: "0 0 34px rgba(255,82,94,0.34)" }} />
-                  <div className="absolute inset-x-10 top-24 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(255,82,94,0.62), transparent)" }} />
-                  <div className="absolute inset-x-10 bottom-24 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(255,200,87,0.38), transparent)" }} />
-                  <div className="absolute left-9 top-16 h-2 w-2 rounded-full bg-[#FFC4B0]/70 shadow-[0_0_18px_rgba(255,196,176,0.7)]" />
-                  <div className="absolute right-9 bottom-16 h-2 w-2 rounded-full bg-[#FFC857]/60 shadow-[0_0_18px_rgba(255,200,87,0.6)]" />
-                </>
-              )}
-
-              <div className="absolute left-5 right-5 top-5 flex items-center justify-between text-[10px] tracking-[0.28em] uppercase text-white/35">
-                <span>КАРТА</span>
-                <span>{currentPlayer + 1}/{settings.playersCount}</span>
-              </div>
-
-              <AnimatePresence mode="wait">
-                {isRoleVisible ? (
-                  <motion.div
-                    key="revealed"
-                    initial={{ opacity: 0, scale: 0.6, filter: "blur(15px)" }}
-                    animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.3 }}
-                    className="flex flex-col items-center gap-3"
-                    style={{ rotateY: 180 }}
-                  >
-                    {showExplicitSpyRole ? (
-                      <>
-                        <span className="text-5xl">?</span>
-                        <span className="text-3xl font-cyber font-black tracking-widest" style={{ color: "#FF3B30", textShadow: "0 0 20px rgba(255,59,48,0.8)" }}>ШПИОН</span>
-                        <span className="text-xs font-sans text-red-400/70 max-w-[190px] text-center">Маскируйся. Угадай слово.</span>
-                        <span className="text-[11px] leading-relaxed font-sans text-red-400/80 max-w-[220px] text-center">{otherSpiesNote}</span>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex flex-col items-center gap-1 max-w-[220px]">
-                          <span className="text-lg font-cyber font-bold tracking-wide text-center" style={{ background: "linear-gradient(135deg, #E83449, #FF7A59)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                            {visibleWord}
-                          </span>
-                          <span className="text-[11px] leading-relaxed font-sans text-white/65 text-center">({visibleWordHint})</span>
-                        </div>
-                        {!disguisedSpyMode && <span className="text-xs font-sans text-[#FF525E]/70">Ты не шпион</span>}
-                        {spy && <span className="text-[11px] leading-relaxed font-sans text-red-400/80 max-w-[220px] text-center">{otherSpiesNote}</span>}
-                      </>
-                    )}
-                  </motion.div>
-                ) : (
-                  <motion.div key="hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center gap-3">
-                    <span className="text-6xl opacity-85 relative z-10">?</span>
-                    <span className="text-sm font-sans text-white/60 tracking-widest uppercase relative z-10">Карта игрока</span>
-                    <span className="text-3xl font-cyber font-black" style={{ color: "#FF525E", textShadow: "0 0 24px rgba(255,82,94,0.55)" }}>
-                      {currentPlayer + 1}
-                    </span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <span className="absolute bottom-5 text-[10px] tracking-[0.24em] uppercase text-white/30">
-                {isRoleVisible ? "Свайпни карту" : "Нажми, чтобы открыть"}
-              </span>
-            </motion.div>
-          </motion.button>
-        </motion.div>
-
-        <p className="text-xs text-white/25 font-sans max-w-xs">
-          Нажми на карту, посмотри роль и свайпни карту в любую сторону. Следующая карта появится сверху.
-        </p>
-      </motion.div>
+        onNext={() => handleRevealDone()}
+      />
     );
   };
 
+  // ─────────────────────────────────────────────────────────────────────────
   // RENDER: Starter Picker
   // ─────────────────────────────────────────────────────────────────────────
 
