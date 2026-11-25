@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/workflows/android-smoke.yml"
       - "scripts/smoke-android-webview.mjs"
+      - "scripts/smoke-text.mjs"
       - "components/**"
       - "data/**"
       - "android/**"

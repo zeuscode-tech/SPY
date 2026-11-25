@@ -5,6 +5,7 @@
 import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { normalizeUiText, uiTextIncludes } from "./smoke-text.mjs";
 
 const PACKAGE = "com.quantumLimited.SPY";
 const ARTIFACTS = "smoke-artifacts";
@@ -127,10 +128,10 @@ async function main() {
     const waitFor = async (text, timeout = 10000) => {
       for (let i = 0; i < timeout / 250; i++) {
         const body = await bodyText();
-        if (body?.includes(text)) return true;
+        if (uiTextIncludes(body, text)) return true;
         await sleep(250);
       }
-      const preview = String(await bodyText() || "").replace(/\s+/g, " ").slice(0, 500);
+      const preview = normalizeUiText(await bodyText()).slice(0, 500);
       throw Error(
         `Could not see ${JSON.stringify(text)} in SPY WebView; body preview: ${JSON.stringify(preview)}`,
       );
@@ -139,7 +140,7 @@ async function main() {
       const buttons = Array.from(document.querySelectorAll("button"));
       const found = buttons.find((b) => {
         const value = ${by === "aria" ? 'b.getAttribute("aria-label") || ""' : '(b.innerText || b.textContent || "").trim()'};
-        return value.includes(${JSON.stringify(needle)});
+        return value.toLocaleLowerCase("ru").includes(${JSON.stringify(normalizeUiText(needle))});
       });
       if (!found || found.disabled) return false;
       found.click(); return true;
@@ -164,7 +165,7 @@ async function main() {
     await click("Готово");
     const startDisabled = await evaluate(`(() => {
       const b = Array.from(document.querySelectorAll("button"))
-        .find((x) => x.innerText.includes("Начать игру"));
+        .find((x) => x.innerText.toLocaleLowerCase("ru").includes("начать игру"));
       return Boolean(b?.disabled);
     })()`);
     assert.ok(startDisabled, "Start must be disabled with no selected categories");
@@ -174,7 +175,7 @@ async function main() {
     await waitFor("Найди");
     const stillEmpty = await evaluate(`(() => {
       const b = Array.from(document.querySelectorAll("button"))
-        .find((x) => x.innerText.includes("Начать игру"));
+        .find((x) => x.innerText.toLocaleLowerCase("ru").includes("начать игру"));
       return Boolean(b?.disabled);
     })()`);
     assert.ok(stillEmpty, "Empty selection lost on WebView reload");
@@ -215,7 +216,9 @@ async function main() {
     await waitFor("Завершить раунд?");
     await click("Подтвердить");
     await waitFor("Раунд");
-    const finished = await evaluate('document.body.innerText.includes("Кто был шпионом?")');
+    const finished = await evaluate(
+      'document.body.innerText.toLocaleLowerCase("ru").includes("кто был шпионом?")',
+    );
     assert.ok(finished, "Results must reveal spies");
     screenshot("07-results");
     result("Early finish and results", true);
