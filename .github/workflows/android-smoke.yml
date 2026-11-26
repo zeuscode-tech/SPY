@@ -1,0 +1,87 @@
+name: SPY Android emulator smoke
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/spy-2-0-foundation]
+    paths:
+      - ".github/workflows/android-smoke.yml"
+      - "scripts/smoke-android-webview.mjs"
+      - "scripts/smoke-text.mjs"
+      - "components/**"
+      - "data/**"
+      - "android/**"
+      - "capacitor.config.ts"
+      - "package.json"
+      - "package-lock.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: spy-android-smoke
+  cancel-in-progress: true
+
+jobs:
+  android-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      # ubuntu-latest already includes the Android SDK and sdkmanager.
+      # Avoid setup-android's legacy "tools" package, removed from the SDK.
+      - name: Install Android API 36 SDK for Capacitor
+        run: |
+          SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
+          echo "${SDK_ROOT}/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          "${SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
+      - name: Install locked JS dependencies
+        run: npm ci
+      - name: Generate Android WebView assets
+        run: npm run cap:sync
+      - name: Build unsigned-from-production debug APK only
+        run: sh ./gradlew assembleDebug --no-daemon
+        working-directory: android
+      - name: Enable KVM hardware acceleration for Android Emulator
+        run: |
+          if [ ! -e /dev/kvm ]; then
+            echo "::error::Hosted runner does not expose /dev/kvm; emulator cannot start."
+            exit 1
+          fi
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          ls -l /dev/kvm
+          test -r /dev/kvm && test -w /dev/kvm
+      - name: Boot emulator and run Android WebView smoke
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: |
+            adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+            # The Pixel launcher can ANR during first boot on a busy hosted runner
+            # and cover SPY with a system dialog. It is not needed for this smoke.
+            adb shell am force-stop com.google.android.apps.nexuslauncher || true
+            adb shell am start -W -n com.quantumLimited.SPY/.MainActivity
+            sleep 8
+            node scripts/smoke-android-webview.mjs
+      - name: Attach evidence and logs even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spy-android-smoke-evidence
+          path: smoke-artifacts/
+          if-no-files-found: warn
+          retention-days: 14

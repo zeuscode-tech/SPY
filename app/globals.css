@@ -5,9 +5,9 @@
 /* ── CSS Variables ───────────────────────────────────────────────────────── */
 :root {
   color-scheme: dark;
-  --coral:        #FF7E5F;
-  --coral-end:    #FEB47B;
-  --coral-accent: #FF8C73;
+  --coral:        #FF525E;
+  --coral-end:    #FF7A59;
+  --coral-accent: #FF525E;
   --void:         #0C0C10;
 }
 
@@ -75,16 +75,16 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 140, 115, 0.35);
+  background: rgba(255, 82, 94, 0.35);
   border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 140, 115, 0.6);
+  background: rgba(255, 82, 94, 0.6);
 }
 
 /* ── Selection ───────────────────────────────────────────────────────────── */
 ::selection {
-  background: rgba(255, 126, 95, 0.25);
+  background: rgba(255, 82, 94, 0.25);
   color: #fff;
 }
 
@@ -101,4 +101,10 @@ a, button, [role="button"] {
 
 html {
   scroll-behavior: smooth;
+}
+
+/* Keyboard accessibility */
+:focus-visible {
+  outline: 2px solid var(--coral-accent);
+  outline-offset: 3px;
 }

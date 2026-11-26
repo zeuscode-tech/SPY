@@ -14,3 +14,6 @@ pnpm-debug.log*
 tsconfig.tsbuildinfo
 android/key.properties
 android/app/upload-keystore.jks
+android/app/release-key.keystore
+*.keystore
+*.jks
