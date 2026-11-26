@@ -22,13 +22,16 @@ npm run android:aab # release AAB; requires your private signing configuration
 ```
 
 A complete Android build additionally requires Android SDK, JDK, and Android build tools.
-The release Gradle configuration reads `android/key.properties` (not committed).
+The release Gradle configuration reads `android/key.properties` (not committed). Copy
+`android/key.properties.example`, point it to a private upload keystore, and provide all
+four signing values. Release tasks fail before building when the configuration is absent,
+incomplete, missing its keystore, or points to the exposed legacy filename.
 
 ## Important before publishing
 - **Do not change the application ID** `com.quantumLimited.SPY`; Google Play updates require the same ID.
 - Verify the current Google Play versionCode and published source. The Play Console shows a July 2026 release, while this repository's current main commit is from May 2026.
 - Increase `versionCode` beyond the currently published value before uploading an update.
-- A release keystore was previously committed publicly at `android/app/release-key.keystore`. Removing it from the latest tree **does not remove it from git history**. If it is an active signing/upload key, follow Google Play's official key-reset guidance and secure the replacement outside git.
+- A release keystore was previously committed publicly at `android/app/release-key.keystore`. Removing it from the latest tree **does not remove it from git history**. Never use that file again. Confirm Play App Signing in Play Console, reset the upload key if needed, and secure the replacement outside git.
 - Use `npm run type-check` and `npm run build:cap` before making an Android release; an Android device/emulator smoke test is still required.
 
 ## Planned monetization
