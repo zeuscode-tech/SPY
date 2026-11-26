@@ -6,6 +6,14 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+def releaseTaskRequested = gradle.startParameter.taskNames.any { taskName ->
+    taskName.toLowerCase(Locale.ROOT).contains("release")
+}
+def requiredReleaseSigningProperties = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword']
+def hasCompleteReleaseSigningProperties = requiredReleaseSigningProperties.every { propertyName ->
+    keystoreProperties[propertyName]?.toString()?.trim()
+}
+
 android {
     namespace = "com.quantumLimited.SPY"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -24,7 +32,7 @@ android {
     }
     signingConfigs {
         release {
-            if (keystorePropertiesFile.exists()) {
+            if (keystorePropertiesFile.exists() && hasCompleteReleaseSigningProperties) {
                 keyAlias keystoreProperties['keyAlias']
                 keyPassword keystoreProperties['keyPassword']
                 storeFile file(keystoreProperties['storeFile'])
@@ -40,6 +48,35 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+}
+
+if (releaseTaskRequested) {
+    if (!keystorePropertiesFile.exists()) {
+        throw new GradleException(
+            "Release signing is not configured. Create android/key.properties from " +
+            "android/key.properties.example and use a private upload key."
+        )
+    }
+
+    def missingReleaseSigningProperties = requiredReleaseSigningProperties.findAll { propertyName ->
+        !keystoreProperties[propertyName]?.toString()?.trim()
+    }
+    if (!missingReleaseSigningProperties.isEmpty()) {
+        throw new GradleException(
+            "Release signing configuration is incomplete. Missing properties: " +
+            missingReleaseSigningProperties.join(', ')
+        )
+    }
+
+    def configuredReleaseKeystore = file(keystoreProperties['storeFile'])
+    if (configuredReleaseKeystore.name == 'release-key.keystore') {
+        throw new GradleException(
+            "Refusing to use the legacy release-key.keystore because it was exposed in git history."
+        )
+    }
+    if (!configuredReleaseKeystore.isFile()) {
+        throw new GradleException("The configured private upload keystore file does not exist.")
     }
 }
 

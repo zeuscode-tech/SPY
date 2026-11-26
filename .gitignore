@@ -17,4 +17,3 @@ android/app/upload-keystore.jks
 android/app/release-key.keystore
 *.keystore
 *.jks
-!android/app/release-key.keystore.example
